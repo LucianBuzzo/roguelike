@@ -1,5 +1,6 @@
 const storage = require('electron-json-storage');
 const player = require('./player');
+const environment = require('./environment');
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -22,11 +23,15 @@ const main = () => {
 };
 
 const update = (dt) => {
+  if (player.moving) {
+    environment.update(player.direction, player.speed);
+  }
 };
 
 const render = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  environment.render(ctx);
   player.render(ctx);
 };
 

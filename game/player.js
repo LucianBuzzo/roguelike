@@ -6,6 +6,7 @@ const Player = function Player() {
   playerImageIdle.src = './assets/player/player-idle.png';
 
   this.loaded = false;
+  this.speed = 6;
   this.imgMoving = playerImageMoving;
   this.imgIdle = playerImageIdle;
   this.width = 128;
