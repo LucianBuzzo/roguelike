@@ -1,11 +1,11 @@
 var Environment = function Environment() {
   var img = new Image();
-  img.src = './assets/environment/background-tile.png';
+  img.src = './assets/environment/street/street1.png';
   this.img = img;
   this.x = 0;
   this.y = 0;
-  this.height = 128;
-  this.width = 128;
+  this.height = 2000;
+  this.width = 2000;
 };
 
 Environment.prototype.update = function update(dir, speed) {
@@ -30,13 +30,13 @@ Environment.prototype.update = function update(dir, speed) {
 };
 
 Environment.prototype.render = function render(ctx) {
-  var pattern = ctx.createPattern(this.img, 'repeat');
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   ctx.save();
 
   ctx.translate(this.x, this.y);
-  ctx.fillStyle = pattern;
-  ctx.fillRect(0 - this.width, 0 - this.height, ctx.canvas.width + this.width * 2, ctx.canvas.width + this.height * 2);
+  ctx.drawImage(this.img, 0, 0);
 
   ctx.restore();
 };
