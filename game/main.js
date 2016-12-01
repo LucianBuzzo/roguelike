@@ -1,5 +1,5 @@
 
-global.DEBUG = true;
+global.DEBUG = false;
 
 const storage = require('electron-json-storage');
 const player = require('./player');

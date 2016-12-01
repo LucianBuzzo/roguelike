@@ -166,7 +166,7 @@ Player.prototype.update = function update(environment) {
 };
 
 // Returns bounding box, this is the players 'footprint';
-Player.prototype.getBB = function getBoundingBox(ctx) {
+Player.prototype.getBB = function getBoundingBox() {
   return {
     top: this.y + this.height - 7,
     right: this.x + this.width - 6,
