@@ -13,6 +13,8 @@ const Player = function Player() {
   this.height = 32;
   this.frame = 0;
   this.tickCount = 0;
+  this.x = 0;
+  this.y = 0;
   this.direction = [];
   this.moving = false;
   this.frames = {
@@ -81,7 +83,7 @@ const Player = function Player() {
   };
 };
 
-Player.prototype.render = function render(ctx) {
+Player.prototype.render = function render(ctx, camera) {
   var dir = this.direction.length ? this.direction[0] : 'down';
   if (this.moving) {
     ctx.drawImage(
@@ -90,8 +92,8 @@ Player.prototype.render = function render(ctx) {
       this.frames[dir][this.frame].y,
       this.width,
       this.height,
-      ctx.canvas.width / 2 - this.width / 2,
-      ctx.canvas.height / 2 - this.height / 2,
+      (this.x + this.width / 2) + camera.offsetX,
+      (this.y + this.height) + camera.offsetY,
       this.width,
       this.height
     );
@@ -102,8 +104,8 @@ Player.prototype.render = function render(ctx) {
       this.idleFrames[dir].y,
       this.width,
       this.height,
-      ctx.canvas.width / 2 - this.width / 2,
-      ctx.canvas.height / 2 - this.height / 2,
+      (this.x + this.width / 2) + camera.offsetX,
+      (this.y + this.height) + camera.offsetY,
       this.width,
       this.height
     );
@@ -123,9 +125,22 @@ Player.prototype.render = function render(ctx) {
   }
 };
 
-Player.prototype.update = function update(velocity, position) {
-   this.rotation = Math.min(velocity / 10 * 90, 90);
-   this.position = position;
+Player.prototype.update = function update() {
+  let speed = this.speed;
+  this.direction.forEach(dir => {
+    if (dir === 'up') {
+      this.y -= speed;
+    }
+    if (dir === 'down') {
+      this.y += speed;
+    }
+    if (dir === 'left') {
+      this.x -= speed;
+    }
+    if (dir === 'right') {
+      this.x += speed;
+    }
+  });
 };
 
 Player.prototype.getBB = function getBoundingBox(ctx) {

@@ -13,7 +13,7 @@ canvas.height = 270;
 canvas.style.width = '960px';
 canvas.style.height = '540px';
 
-const camera = new Camera(canvas, -93, -38);
+const camera = new Camera(canvas, 0, 0);
 
 // The main game loop
 var lastTime;
@@ -29,16 +29,16 @@ const main = () => {
 };
 
 const update = (dt) => {
-  if (player.moving) {
-    environment.update(player.direction, player.speed);
-  }
+  environment.update();
+  camera.update(ctx, player);
+  player.update();
 };
 
 const render = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  environment.render(ctx);
-  player.render(ctx);
+  environment.render(ctx, camera);
+  player.render(ctx, camera);
 };
 
 document.addEventListener('keydown', function(e) {

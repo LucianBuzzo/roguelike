@@ -15,35 +15,15 @@ var Environment = function Environment() {
 };
 
 Environment.prototype.update = function update(dirs, speed) {
-  dirs.forEach(dir => {
-    if (dir === 'up') {
-      this.y += speed;
-    }
-    if (dir === 'down') {
-      this.y -= speed;
-    }
-    if (dir === 'left') {
-      this.x += speed;
-    }
-    if (dir === 'right') {
-      this.x -= speed;
-    }
-    if (Math.abs(this.x) >= this.width) {
-      this.x = 0;
-    }
-    if (Math.abs(this.y) >= this.height) {
-      this.y = 0;
-    }
-  });
 };
 
-Environment.prototype.render = function render(ctx) {
+Environment.prototype.render = function render(ctx, camera) {
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   ctx.save();
 
-  ctx.translate(this.x, this.y);
+  ctx.translate(camera.offsetX, camera.offsetY);
   ctx.drawImage(this.img, 0, 0);
 
   ctx.restore();
