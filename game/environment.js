@@ -1,6 +1,6 @@
 var Environment = function Environment() {
   var img = new Image();
-  img.src = './assets/environment/street/street1.png';
+  img.src = './assets/environment/street/street1-small.png';
   this.img = img;
   this.x = 0;
   this.y = 0;

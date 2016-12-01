@@ -6,8 +6,11 @@ const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-canvas.width = window.innerWidth - 50;
-canvas.height = window.innerHeight - 50;
+canvas.width = 480;
+canvas.height = 270;
+
+canvas.style.width = '960px';
+canvas.style.height = '540px';
 
 // The main game loop
 var lastTime;
