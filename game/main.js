@@ -33,7 +33,7 @@ const main = () => {
 };
 
 const update = (dt) => {
-  environment.update();
+  environment.update(dt);
   camera.update(ctx, player);
   player.update(environment);
 };

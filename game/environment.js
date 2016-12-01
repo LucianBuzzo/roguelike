@@ -5,9 +5,17 @@ var Environment = function Environment() {
   var foregroundImg = new Image();
   foregroundImg.src = './assets/environment/street/street1-foreground.png';
 
+  var backgroundImg1 = new Image();
+  backgroundImg1.src = './assets/environment/street/street1-background1.png';
+
+  var backgroundImg2 = new Image();
+  backgroundImg2.src = './assets/environment/street/street1-background2.png';
+
   this.debug = global.DEBUG;
   this.img = img;
   this.foregroundImg = foregroundImg;
+  this.backgroundImgs = [backgroundImg1, backgroundImg2];
+  this.bgImageIndex = 0;
   this.x = 0;
   this.y = 0;
   this.height = 500;
@@ -21,7 +29,7 @@ var Environment = function Environment() {
     top: 0,
     left: 188,
     right: 500,
-    bottom: 500
+    bottom: 400
   }, {
     top: 105,
     left: 0,
@@ -36,6 +44,10 @@ var Environment = function Environment() {
 };
 
 Environment.prototype.update = function update() {
+  this.bgImageIndex++;
+  if (this.bgImageIndex > 100) {
+    this.bgImageIndex = 0;
+  }
 };
 
 Environment.prototype.render = function render(ctx, camera) {
@@ -46,7 +58,11 @@ Environment.prototype.render = function render(ctx, camera) {
 
   ctx.translate(camera.offsetX, camera.offsetY);
 
+  let index = this.bgImageIndex < 50 ? 0 : 1;
+  ctx.drawImage(this.backgroundImgs[index], 40 - camera.offsetX / 5, 40 - camera.offsetY / 5);
+
   ctx.drawImage(this.img, 0, 0);
+
 
   if (this.debug) {
     ctx.strokeStyle = 'red';
