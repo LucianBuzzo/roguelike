@@ -26,10 +26,20 @@ var Environment = function Environment() {
     right: -1,
     bottom: 110
   }, {
-    top: 0,
+    top: 80,
+    left: 188,
+    right: 200,
+    bottom: 96
+  }, {
+    top: 122,
     left: 188,
     right: 500,
     bottom: 400
+  }, {
+    top: 80,
+    left: 203,
+    right: 500,
+    bottom: 120
   }, {
     top: 105,
     left: 0,

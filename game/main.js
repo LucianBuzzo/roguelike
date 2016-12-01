@@ -1,7 +1,6 @@
 
 global.DEBUG = false;
 
-const storage = require('electron-json-storage');
 const player = require('./player');
 const Camera = require('./camera');
 const environment = require('./environment');
