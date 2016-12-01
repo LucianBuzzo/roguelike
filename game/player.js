@@ -5,6 +5,7 @@ const Player = function Player() {
   var playerImageIdle = new Image();
   playerImageIdle.src = './assets/player/player-idle.png';
 
+  this.debug = global.DEBUG;
   this.loaded = false;
   this.speed = 2;
   this.imgMoving = playerImageMoving;
@@ -13,8 +14,8 @@ const Player = function Player() {
   this.height = 32;
   this.frame = 0;
   this.tickCount = 0;
-  this.x = 0;
-  this.y = 0;
+  this.x = 12;
+  this.y = 65;
   this.direction = [];
   this.moving = false;
   this.frames = {
@@ -85,6 +86,17 @@ const Player = function Player() {
 
 Player.prototype.render = function render(ctx, camera) {
   var dir = this.direction.length ? this.direction[0] : 'down';
+  ctx.save();
+
+  ctx.translate(camera.offsetX, camera.offsetY);
+
+  if (this.debug) {
+    let box = this.getBB();
+    ctx.strokeStyle = 'red';
+    ctx.strokeRect(box.left, box.top, box.right - box.left, box.bottom - box.top);
+  }
+
+
   if (this.moving) {
     ctx.drawImage(
       this.imgMoving,
@@ -92,8 +104,8 @@ Player.prototype.render = function render(ctx, camera) {
       this.frames[dir][this.frame].y,
       this.width,
       this.height,
-      (this.x + this.width / 2) + camera.offsetX,
-      (this.y + this.height) + camera.offsetY,
+      this.x,
+      this.y,
       this.width,
       this.height
     );
@@ -104,13 +116,15 @@ Player.prototype.render = function render(ctx, camera) {
       this.idleFrames[dir].y,
       this.width,
       this.height,
-      (this.x + this.width / 2) + camera.offsetX,
-      (this.y + this.height) + camera.offsetY,
+      this.x,
+      this.y,
       this.width,
       this.height
     );
+    ctx.restore();
     return;
   }
+  ctx.restore();
 
   this.tickCount++;
 
@@ -125,8 +139,10 @@ Player.prototype.render = function render(ctx, camera) {
   }
 };
 
-Player.prototype.update = function update() {
+Player.prototype.update = function update(environment) {
   let speed = this.speed;
+  let origY = this.y;
+  let origX = this.x;
   this.direction.forEach(dir => {
     if (dir === 'up') {
       this.y -= speed;
@@ -141,14 +157,21 @@ Player.prototype.update = function update() {
       this.x += speed;
     }
   });
+
+  // Chec to see if we bumped into anything! if we did, reset the position
+  if (environment.isOutOfBounds(this.getBB())) {
+    this.x = origX;
+    this.y = origY;
+  }
 };
 
+// Returns bounding box, this is the players 'footprint';
 Player.prototype.getBB = function getBoundingBox(ctx) {
   return {
-    top: ctx.canvas.height / 2 - this.height / 2,
-    right: ctx.canvas.width / 2 - this.width / 2 + this.width,
-    bottom: ctx.canvas.height / 2 - this.height / 2 + this.height,
-    left: ctx.canvas.width / 2 - this.width / 2
+    top: this.y + this.height - 7,
+    right: this.x + this.width - 6,
+    bottom: this.y + this.height,
+    left: this.x + 6,
   };
 };
 

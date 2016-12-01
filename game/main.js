@@ -1,3 +1,6 @@
+
+global.DEBUG = true;
+
 const storage = require('electron-json-storage');
 const player = require('./player');
 const Camera = require('./camera');
@@ -5,6 +8,7 @@ const environment = require('./environment');
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
+
 ctx.imageSmoothingEnabled = false;
 
 canvas.width = 480;
@@ -31,7 +35,7 @@ const main = () => {
 const update = (dt) => {
   environment.update();
   camera.update(ctx, player);
-  player.update();
+  player.update(environment);
 };
 
 const render = () => {
