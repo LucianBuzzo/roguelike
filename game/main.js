@@ -43,6 +43,8 @@ const render = () => {
 
   environment.render(ctx, camera);
   player.render(ctx, camera);
+
+  environment.renderForeground(ctx, camera);
 };
 
 document.addEventListener('keydown', function(e) {

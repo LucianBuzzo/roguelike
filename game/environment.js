@@ -2,8 +2,12 @@ var Environment = function Environment() {
   var img = new Image();
   img.src = './assets/environment/street/street1-small.png';
 
+  var foregroundImg = new Image();
+  foregroundImg.src = './assets/environment/street/street1-foreground.png';
+
   this.debug = global.DEBUG;
   this.img = img;
+  this.foregroundImg = foregroundImg;
   this.x = 0;
   this.y = 0;
   this.height = 500;
@@ -51,6 +55,13 @@ Environment.prototype.render = function render(ctx, camera) {
     });
   }
 
+  ctx.restore();
+};
+
+Environment.prototype.renderForeground = function renderForeground(ctx, camera) {
+  ctx.save();
+  ctx.translate(camera.offsetX, camera.offsetY);
+  ctx.drawImage(this.foregroundImg, 0, 0);
   ctx.restore();
 };
 
