@@ -13,7 +13,7 @@ const Player = function Player() {
   this.height = 32;
   this.frame = 0;
   this.tickCount = 0;
-  this.direction = 'down';
+  this.direction = [];
   this.moving = false;
   this.frames = {
     up: [
@@ -82,11 +82,12 @@ const Player = function Player() {
 };
 
 Player.prototype.render = function render(ctx) {
+  var dir = this.direction.length ? this.direction[0] : 'down';
   if (this.moving) {
     ctx.drawImage(
       this.imgMoving,
-      this.frames[this.direction][this.frame].x,
-      this.frames[this.direction][this.frame].y,
+      this.frames[dir][this.frame].x,
+      this.frames[dir][this.frame].y,
       this.width,
       this.height,
       ctx.canvas.width / 2 - this.width / 2,
@@ -97,8 +98,8 @@ Player.prototype.render = function render(ctx) {
   } else {
     ctx.drawImage(
       this.imgIdle,
-      this.idleFrames[this.direction].x,
-      this.idleFrames[this.direction].y,
+      this.idleFrames[dir].x,
+      this.idleFrames[dir].y,
       this.width,
       this.height,
       ctx.canvas.width / 2 - this.width / 2,
@@ -117,7 +118,7 @@ Player.prototype.render = function render(ctx) {
 
   this.tickCount = 0;
   this.frame++;
-  if (this.frame >= this.frames[this.direction].length) {
+  if (this.frame >= this.frames[dir].length) {
     this.frame = 0;
   }
 };
@@ -134,6 +135,18 @@ Player.prototype.getBB = function getBoundingBox(ctx) {
     bottom: ctx.canvas.height / 2 - this.height / 2 + this.height,
     left: ctx.canvas.width / 2 - this.width / 2
   };
+};
+
+Player.prototype.addDirection = function addDirection(dir) {
+  if (this.direction.indexOf(dir) === -1) {
+    this.direction.push(dir);
+  }
+  this.moving = this.direction.length > 0;
+};
+
+Player.prototype.removeDirection = function removeDirection(dir) {
+  this.direction = this.direction.filter(d => d !== dir);
+  this.moving = this.direction.length > 0;
 };
 
 module.exports = new Player();

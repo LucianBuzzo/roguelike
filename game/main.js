@@ -43,36 +43,32 @@ const render = () => {
 
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowUp' || e.key === 'w') {
-    player.direction = 'up';
-    player.moving = true;
+    player.addDirection('up');
   }
   if (e.key === 'ArrowDown' || e.key === 's') {
-    player.direction = 'down';
-    player.moving = true;
+    player.addDirection('down');
   }
   if (e.key === 'ArrowLeft' || e.key === 'a') {
-    player.direction = 'left';
-    player.moving = true;
+    player.addDirection('left');
   }
   if (e.key === 'ArrowRight' || e.key === 'd') {
-    player.direction = 'right';
-    player.moving = true;
+    player.addDirection('right');
   }
   console.log(e);
 });
 
 document.addEventListener('keyup', function(e) {
   if (e.key === 'ArrowUp' || e.key === 'w') {
-    player.moving = false;
+    player.removeDirection('up');
   }
   if (e.key === 'ArrowDown' || e.key === 's') {
-    player.moving = false;
+    player.removeDirection('down');
   }
   if (e.key === 'ArrowLeft' || e.key === 'a') {
-    player.moving = false;
+    player.removeDirection('left');
   }
   if (e.key === 'ArrowRight' || e.key === 'd') {
-    player.moving = false;
+    player.removeDirection('right');
   }
   console.log(e);
 });
