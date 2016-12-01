@@ -127,12 +127,12 @@ Player.prototype.update = function update(velocity, position) {
    this.position = position;
 };
 
-Player.prototype.getBoundingBox = function getBoundingBox() {
+Player.prototype.getBB = function getBoundingBox(ctx) {
   return {
-    top: this.position,
-    right: this.width + 60,
-    bottom: this.position + this.height,
-    left: 60
+    top: ctx.canvas.height / 2 - this.height / 2,
+    right: ctx.canvas.width / 2 - this.width / 2 + this.width,
+    bottom: ctx.canvas.height / 2 - this.height / 2 + this.height,
+    left: ctx.canvas.width / 2 - this.width / 2
   };
 };
 

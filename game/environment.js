@@ -4,8 +4,14 @@ var Environment = function Environment() {
   this.img = img;
   this.x = 0;
   this.y = 0;
-  this.height = 2000;
-  this.width = 2000;
+  this.height = 500;
+  this.width = 500;
+  this.bounds = [{
+    top: 0,
+    left: 188,
+    right: 500,
+    bottom: 500
+  }];
 };
 
 Environment.prototype.update = function update(dir, speed) {
@@ -41,4 +47,23 @@ Environment.prototype.render = function render(ctx) {
   ctx.restore();
 };
 
+const intersectRect = function intersectRect(r1, r2) {
+  return !(r2.left > r1.right ||
+           r2.right < r1.left ||
+           r2.top > r1.bottom ||
+           r2.bottom < r1.top);
+};
+
+
+Environment.prototype.isOutOfBounds = function(boundingBox) {
+  let oob = false;
+  for (var i = 0; i < this.bounds.length; i++) {
+    if (intersectRect(boundingBox, this.bounds[i])) {
+      oob = true;
+      break;
+    }
+  }
+
+  return oob;
+}
 module.exports = new Environment();

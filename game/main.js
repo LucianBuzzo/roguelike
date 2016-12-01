@@ -1,5 +1,6 @@
 const storage = require('electron-json-storage');
 const player = require('./player');
+const Camera = require('./camera');
 const environment = require('./environment');
 
 const canvas = document.querySelector('canvas');
@@ -11,6 +12,8 @@ canvas.height = 270;
 
 canvas.style.width = '960px';
 canvas.style.height = '540px';
+
+const camera = new Camera(canvas, -93, -38);
 
 // The main game loop
 var lastTime;
