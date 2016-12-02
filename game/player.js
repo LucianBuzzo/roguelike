@@ -16,6 +16,7 @@ const Player = function Player() {
   this.tickCount = 0;
   this.x = 12;
   this.y = 65;
+  this.idleDirection = 'down';
   this.direction = [];
   this.moving = false;
   this.frames = {
@@ -85,7 +86,7 @@ const Player = function Player() {
 };
 
 Player.prototype.render = function render(ctx, camera) {
-  var dir = this.direction.length ? this.direction[0] : 'down';
+  var dir = this.moving ? this.direction[0] : this.idleDirection;
   ctx.save();
 
   ctx.translate(camera.offsetX, camera.offsetY);
@@ -179,7 +180,8 @@ Player.prototype.addDirection = function addDirection(dir) {
   if (this.direction.indexOf(dir) === -1) {
     this.direction.push(dir);
   }
-  this.moving = this.direction.length > 0;
+  this.moving = true;
+  this.idleDirection = dir;
 };
 
 Player.prototype.removeDirection = function removeDirection(dir) {
