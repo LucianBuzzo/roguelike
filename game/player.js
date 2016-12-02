@@ -1,9 +1,9 @@
 const Player = function Player() {
   var playerImageMoving = new Image();
-  playerImageMoving.src = './assets/player/player-spritesheet.png';
+  playerImageMoving.src = './assets/player/player2-spritesheet.png';
 
   var playerImageIdle = new Image();
-  playerImageIdle.src = './assets/player/player-idle.png';
+  playerImageIdle.src = './assets/player/player2-idle.png';
 
   this.debug = global.DEBUG;
   this.loaded = false;
