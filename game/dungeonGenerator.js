@@ -222,9 +222,9 @@ const Dungeon = function Dungeon() {
     
     _connectRegions();
 
-    /*
     _removeDeadEnds();
 
+    /*
     _rooms.forEach(onDecorateRoom);
     */
 
@@ -437,25 +437,27 @@ const Dungeon = function Dungeon() {
 
   const _removeDeadEnds = () => {
     var done = false;
+    let count = 0;
 
-    while (!done) {
+    console.log('removing dead ends');
+    while (count > 200 || !done) {
       done = true;
-
-      for (var pos in bounds.inflate(-1)) {
-        if (getTile(pos) == Tiles.wall) continue;
-
-        // If it only has one exit, it's a dead end.
-        var exits = 0;
-        for (var dir in Direction.CARDINAL) {
-          if (getTile(pos + dir) != Tiles.wall) exits++;
-        }
-
-        if (exits != 1) continue;
-
-        done = false;
-        setTile(pos, Tiles.wall);
-      }
+      count++;
+      tiles.forEach((row, rowIndex) => {
+        row.forEach((tile, tileIndex) => {
+          // If it only has one exit, it's a dead end --> fill it in!
+          if (tile.type === 'wall') {
+            return;
+          }
+          if (_.values(tile.nesw).filter(t => t.type !== 'wall').length === 1) {
+            tile.type = 'wall';
+            done = false;
+          }
+        });
+      });
     }
+
+    console.log('finished removing dead ends');
   };
 
   // Gets whether or not an opening can be carved from the given starting
