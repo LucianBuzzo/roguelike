@@ -101,6 +101,11 @@ ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
 for (var i = 0; i < dungeon.tiles.length; i++) {
   for (var j = 0; j < dungeon.tiles.length; j++) {
     if (dungeon.tiles[i][j].type === 'floor') {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.fillRect(i * 2, j * 2, 2, 2);
+    }
+    if (dungeon.tiles[i][j].type === 'door') {
+      ctx.fillStyle = 'yellow';
       ctx.fillRect(i * 2, j * 2, 2, 2);
     }
   }

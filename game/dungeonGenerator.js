@@ -3,6 +3,7 @@
  */
 
 var _ = require('underscore');
+window._ = _;
 
 const Rect = function Rect(x, y, width, height) {
   this.x = x;
@@ -102,11 +103,13 @@ const Dungeon = function Dungeon() {
   const setTile = (x, y, type) => {
     if (tiles[x] && tiles[x][y]) {
       tiles[x][y].type = type;
+      tiles[x][y].region = _currentRegion;
     }
   };
 
   const fill = (type) => {
     let neighbours = [];
+    let nesw = {};
 
     for (var x = 0; x < stage.width; x++) {
       tiles.push([]);
@@ -118,31 +121,37 @@ const Dungeon = function Dungeon() {
     for (var x = 0; x < stage.width; x++) {
       for (var y = 0; y < stage.height; y++) {  
         neighbours = [];
+        nesw = {};
         if (tiles[x][y - 1]) {
           neighbours.push(tiles[x][y - 1]);
+          nesw.north = tiles[x][y - 1];
         }
         if (tiles[x + 1] && tiles[x + 1][y - 1]) {
           neighbours.push(tiles[x + 1][y - 1]);
         }
         if (tiles[x + 1] && tiles[x + 1][y]) {
           neighbours.push(tiles[x + 1][y]);
+          nesw.east = tiles[x + 1][y];
         }
         if (tiles[x + 1] && tiles[x + 1][y + 1]) {
           neighbours.push(tiles[x + 1][y + 1]);
         }
         if (tiles[x] && tiles[x][y + 1]) {
           neighbours.push(tiles[x][y + 1]);
+          nesw.south = tiles[x][y + 1];
         }
         if (tiles[x - 1] && tiles[x - 1][y + 1]) {
           neighbours.push(tiles[x - 1][y + 1]);
         }
         if (tiles[x - 1] && tiles[x - 1][y]) {
           neighbours.push(tiles[x - 1][y]);
+          nesw.west = tiles[x - 1][y];
         }
         if (tiles[x - 1] && tiles[x - 1][y - 1]) {
           neighbours.push(tiles[x - 1][y - 1]);
         }
         tiles[x][y].setNeighbours(neighbours);
+        tiles[x][y].nesw = nesw;
       }
     }
   };
@@ -210,8 +219,10 @@ const Dungeon = function Dungeon() {
       }
     }
 
-    /*
+    
     _connectRegions();
+
+    /*
     _removeDeadEnds();
 
     _rooms.forEach(onDecorateRoom);
@@ -231,13 +242,15 @@ const Dungeon = function Dungeon() {
     var cells = [];
     var lastDir;
 
-    _startRegion();
+    
 
     if (tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
       return;
     }
 
-    _carve(startX. startY);
+    _startRegion();
+
+    _carve(startX, startY);
 
     cells.push({x: startX, y: startY });
     let count = 0;
@@ -372,79 +385,47 @@ const Dungeon = function Dungeon() {
   };
 
   const _connectRegions = () => {
-    // Find all of the tiles that can connect two (or more) regions.
-    var connectorRegions = {};
-    for (var pos in bounds.inflate(-1)) {
-      // Can't already be part of a region.
-      if (getTile(pos) != Tiles.wall) continue;
-
-      var regions = new Set();
-      for (var dir in Direction.CARDINAL) {
-        var region = _regions[pos + dir];
-        if (region != null) regions.add(region);
-      }
-
-      if (regions.length < 2) continue;
-
-      connectorRegions[pos] = regions;
-    }
-
-    var connectors = connectorRegions.keys.toList();
-
-    // Keep track of which regions have been merged. This maps an original
-    // region index to the one it has been merged to.
-    var merged = {};
-    var openRegions = new Set();
-    for (var i = 0; i <= _currentRegion; i++) {
-      merged[i] = i;
-      openRegions.add(i);
-    }
-
-    // Keep connecting regions until we're down to one.
-    while (openRegions.length > 1) {
-      var connector = rng.item(connectors);
-
-      // Carve the connection.
-      _addJunction(connector);
-
-      // Merge the connected regions. We'll pick one region (arbitrarily) and
-      // map all of the other regions to its index.
-      var regions = connectorRegions[connector]
-          .map((region) => merged[region]);
-      var dest = regions.first;
-      var sources = regions.skip(1).toList();
-
-      // Merge all of the affected regions. We have to look at *all* of the
-      // regions because other regions may have previously been merged with
-      // some of the ones we're merging now.
-      for (var i = 0; i <= _currentRegion; i++) {
-        if (sources.contains(merged[i])) {
-          merged[i] = dest;
+    let regionConnections = {};
+    tiles.forEach((row, rowIndex) => {
+      row.forEach((tile, tileIndex) => {
+        if (tile.type === 'floor') {
+          return;
         }
-      }
+        
+        let tileRegions = _.unique(
+          _.values(tile.nesw).map(x => x.region)
+          .filter(x => !_.isUndefined(x))
+        );
+        if (tileRegions.length <= 1) {
+          return;
+        }
 
-      // The sources are no longer in use.
-      openRegions.removeAll(sources);
-
-      // Remove any connectors that aren't needed anymore.
-      connectors.removeWhere((pos) => {
-        // Don't allow connectors right next to each other.
-        if (connector - pos < 2) return true;
-
-        // If the connector no long spans different regions, we don't need it.
-        var regions = connectorRegions[pos].map((region) => merged[region])
-            .toSet();
-
-        if (regions.length > 1) return false;
-
-        // This connecter isn't needed, but connect it occasionally so that the
-        // dungeon isn't singly-connected.
-        if (rng.oneIn(extraConnectorChance)) _addJunction(pos);
-
-        return true;
+        let key = tileRegions.join('-');
+        if (!regionConnections[key]) {
+          regionConnections[key] = [];
+        }
+        regionConnections[key].push(tile);
+      
       });
-    }
+    });
+
+    _.each(regionConnections, (connections, key) => {
+      let index = _.random(0, connections.length - 1);
+      connections[index].type = 'door';
+      connections.splice(index, 1);
+      
+      // Occasional open up additional connections
+      connections.forEach(conn => {
+        if (_oneIn(50)) {
+          conn.type = 'door';
+        }
+      });
+    });
   }
+
+  const _oneIn = (num) => {
+    return _.random(1, num) === 1;
+  };
 
   const _addJunction = (pos) => {
     if (rng.oneIn(4)) {
@@ -497,7 +478,6 @@ const Dungeon = function Dungeon() {
 
   const _carve = (x, y, type = 'floor') => {
     setTile(x, y, type);
-    // _regions[pos] = _currentRegion;
   };
 
   return {
