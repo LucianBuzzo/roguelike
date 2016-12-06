@@ -32,6 +32,11 @@ Rect.prototype.intersects = function intersects(other) {
 
 const Tile = function Tile(type) {
   this.type = type;
+  this.neighbours = [];
+};
+
+Tile.prototype.setNeighbours = function(neighbours) {
+  this.neighbours = neighbours;
 };
 
 // The random dungeon generator.
@@ -94,17 +99,50 @@ const Dungeon = function Dungeon() {
 
   let tiles = [];
 
-  const setTile = (x, y, tile) => {
+  const setTile = (x, y, type) => {
     if (tiles[x] && tiles[x][y]) {
-      tiles[x][y].type = tile;
+      tiles[x][y].type = type;
     }
   };
 
   const fill = (type) => {
-    for (var y = 0; y < stage.height; y++) {
+    let neighbours = [];
+
+    for (var x = 0; x < stage.width; x++) {
       tiles.push([]);
-      for (var x = 0; x < stage.width; x++) {
-        tiles[y].push(new Tile(type));
+      for (var y = 0; y < stage.height; y++) {  
+        tiles[x].push(new Tile(type));
+      }
+    }
+
+    for (var x = 0; x < stage.width; x++) {
+      for (var y = 0; y < stage.height; y++) {  
+        neighbours = [];
+        if (tiles[x][y - 1]) {
+          neighbours.push(tiles[x][y - 1]);
+        }
+        if (tiles[x + 1] && tiles[x + 1][y - 1]) {
+          neighbours.push(tiles[x + 1][y - 1]);
+        }
+        if (tiles[x + 1] && tiles[x + 1][y]) {
+          neighbours.push(tiles[x + 1][y]);
+        }
+        if (tiles[x + 1] && tiles[x + 1][y + 1]) {
+          neighbours.push(tiles[x + 1][y + 1]);
+        }
+        if (tiles[x] && tiles[x][y + 1]) {
+          neighbours.push(tiles[x][y + 1]);
+        }
+        if (tiles[x - 1] && tiles[x - 1][y + 1]) {
+          neighbours.push(tiles[x - 1][y + 1]);
+        }
+        if (tiles[x - 1] && tiles[x - 1][y]) {
+          neighbours.push(tiles[x - 1][y]);
+        }
+        if (tiles[x - 1] && tiles[x - 1][y - 1]) {
+          neighbours.push(tiles[x - 1][y - 1]);
+        }
+        tiles[x][y].setNeighbours(neighbours);
       }
     }
   };
@@ -194,6 +232,11 @@ const Dungeon = function Dungeon() {
     var lastDir;
 
     _startRegion();
+
+    if (tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
+      return;
+    }
+
     _carve(startX. startY);
 
     cells.push({x: startX, y: startY });
@@ -258,7 +301,7 @@ const Dungeon = function Dungeon() {
           dir = unmadeCells[_.random(0, unmadeCells.length - 1)];
         }
 
-        let [dirX, dirY] = dir.split(':');
+        let [dirX, dirY] = dir.split(':').map(Number);
 
         _carve(cell.x, cell.y);
         _carve(dirX, dirY);
