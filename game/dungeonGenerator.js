@@ -198,7 +198,7 @@ const Dungeon = function Dungeon() {
 
     cells.push({x: startX, y: startY });
     let count = 0;
-    while (cells.length && count < 10) {
+    while (cells.length && count < 500) {
       count++;
       var cell = cells[cells.length - 1];
       var x = cell.x;
@@ -210,28 +210,40 @@ const Dungeon = function Dungeon() {
       if (
         _canCarve(x, y - 1) &&
         _canCarve(x, y - 2) &&
-        _canCarve(x, y - 3)
+        _canCarve(x - 1, y - 1) &&
+        _canCarve(x - 1, y - 2) &&
+        _canCarve(x + 1, y - 1) &&
+        _canCarve(x + 1, y - 2)
       ) {
         unmadeCells.push(x + ':' + (y - 1));
       }
       if (
         _canCarve(x + 1, y) &&
         _canCarve(x + 2, y) &&
-        _canCarve(x + 3, y)
+        _canCarve(x + 1, y - 1) &&
+        _canCarve(x + 2, y - 2) &&
+        _canCarve(x + 1, y + 1) &&
+        _canCarve(x + 2, y + 2)
       ) {
         unmadeCells.push(x + 1 + ':' + y);
       }
       if (
         _canCarve(x, y + 1) &&
         _canCarve(x, y + 2) &&
-        _canCarve(x, y + 3)
+        _canCarve(x - 1, y + 1) &&
+        _canCarve(x - 2, y + 2) &&
+        _canCarve(x + 1, y + 1) &&
+        _canCarve(x + 2, y + 2)
       ) {
         unmadeCells.push(x + ':' + (y + 1));
       }
       if (
         _canCarve(x - 1, y) &&
         _canCarve(x - 2, y) &&
-        _canCarve(x - 3, y)
+        _canCarve(x - 1, y - 1) &&
+        _canCarve(x - 2, y - 2) &&
+        _canCarve(x - 1, y - 1) &&
+        _canCarve(x - 2, y - 2)
       ) {
         unmadeCells.push(x - 1 + ':' + y);
       }
@@ -250,9 +262,8 @@ const Dungeon = function Dungeon() {
 
         _carve(cell.x, cell.y);
         _carve(dirX, dirY);
-        _carve(cell.x + (dirX - cell.x) * 2, cell.y + (dirY - cell.y) * 2);
 
-        cells.push({ x: cell.x + (dirX - cell.x) * 2, y: cell.y + (dirY - cell.y) * 2 });
+        cells.push({ x: dirX, y: dirY });
         lastDir = dir;
       } else {
         // No adjacent uncarved cells.
