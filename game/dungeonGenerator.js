@@ -1,9 +1,9 @@
 /**
- * Credit to hauberk on github
+ * Based on Bob Nystrom's procedural dungeon generation logic that he wrote for Hauberk
+ * http://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/
  */
 
 var _ = require('underscore');
-window._ = _;
 
 const Rect = function Rect(x, y, width, height) {
   this.x = x;
@@ -194,18 +194,14 @@ const Dungeon = function Dungeon() {
 
   const generate = (stage) => {
     if (stage.width % 2 === 0 || stage.height % 2 === 0) {
-      throw new Error("The stage must be odd-sized.");
+      throw new Error('The stage must be odd-sized.');
     }
 
     bindStage(stage);
 
     fill('wall');
-    console.log(tiles);
-    // _regions = [stage.width, stage.height];
-
+   
     _addRooms();
-
-    console.log(_rooms);
 
     // Fill in all of the empty space with mazes.
     for (var y = 0; y < stage.height; y++) {
@@ -437,19 +433,17 @@ const Dungeon = function Dungeon() {
 
   const _removeDeadEnds = () => {
     var done = false;
-    let count = 0;
 
     console.log('removing dead ends');
-    while (count > 200 || !done) {
+    while (!done) {
       done = true;
-      count++;
       tiles.forEach((row, rowIndex) => {
         row.forEach((tile, tileIndex) => {
           // If it only has one exit, it's a dead end --> fill it in!
           if (tile.type === 'wall') {
             return;
           }
-          if (_.values(tile.nesw).filter(t => t.type !== 'wall').length === 1) {
+          if (_.values(tile.nesw).filter(t => t.type !== 'wall').length <= 1) {
             tile.type = 'wall';
             done = false;
           }

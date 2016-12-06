@@ -83,8 +83,8 @@ document.addEventListener('keyup', function(e) {
 var Dungeon = require('./dungeonGenerator.js');
 
 var dungeon = new Dungeon().generate({
-  width: 101,
-  height: 101
+  width: 51,
+  height: 51
 });
 
 ctx.fillStyle = 'black';
