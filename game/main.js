@@ -78,4 +78,30 @@ document.addEventListener('keyup', function(e) {
   console.log(e);
 });
 
-main();
+// main();
+
+var Dungeon = require('./dungeonGenerator.js');
+
+var dungeon = new Dungeon().generate({
+  width: 101,
+  height: 101
+});
+
+ctx.fillStyle = 'black';
+ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+ctx.fillStyle = 'red';
+
+dungeon.rooms.forEach((room) => {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(room.x * 2, room.y * 2, room.width * 2, room.height * 2);
+});
+
+ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+for (var i = 0; i < dungeon.tiles.length; i++) {
+  for (var j = 0; j < dungeon.tiles.length; j++) {
+    if (dungeon.tiles[i][j].type === 'floor') {
+      ctx.fillRect(i * 2, j * 2, 2, 2);
+    }
+  }
+}
