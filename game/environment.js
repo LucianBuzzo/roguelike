@@ -1,5 +1,7 @@
-var Dungeon = require('./dungeonGenerator.js');
-var U = require('./utils.js');
+const Dungeon = require('./dungeonGenerator.js');
+const U = require('./utils.js');
+const turf = require('turf');
+const overlaps = require('turf-overlaps');
 
 const intersectRect = function intersectRect(r1, r2) {
   return !(r2.left > r1.right ||
@@ -8,28 +10,6 @@ const intersectRect = function intersectRect(r1, r2) {
            r2.bottom < r1.top);
 };
 
-const intersectIsometric = function(r1, r2) {
-  // Check outer bounding box first
-  if (!intersectRect(r1, r2)) {
-    return false;
-  }
-
-  let conv1 = {
-    top: r1.top - (r1.bottom - r1.top) / 2,
-    left: r1.left,
-    right: r1.right,
-    bottom: r1.bottom + (r1.bottom - r1.top) / 2
-  };
-
-  let conv2 = {
-    top: r2.top - (r2.bottom - r2.top) / 2,
-    left: r2.left,
-    right: r2.right,
-    bottom: r2.bottom + (r2.bottom - r2.top) / 2
-  };
-
-  return intersectRect(conv1, conv2);
-};
 
 
 var Environment = function Environment() {
@@ -145,9 +125,9 @@ Environment.prototype.drawTile = function drawTile(x, y, ctx) {
 
   ctx.beginPath();
   ctx.moveTo(isoX, isoY);
-  ctx.lineTo(isoX + this.tileWidth / 2, isoY - this.tileHeight / 2);
-  ctx.lineTo(isoX + this.tileWidth, isoY);
   ctx.lineTo(isoX + this.tileWidth / 2, isoY + this.tileHeight / 2);
+  ctx.lineTo(isoX, isoY + this.tileHeight);
+  ctx.lineTo(isoX - this.tileWidth / 2, isoY + this.tileHeight / 2);
   ctx.lineTo(isoX, isoY);
   ctx.fill();
 };
@@ -155,9 +135,9 @@ Environment.prototype.drawTile = function drawTile(x, y, ctx) {
 Environment.prototype.outlineBounds = function outlineBounds(x, y, width, height, ctx) {
   ctx.beginPath();
   ctx.moveTo(x, y);
-  ctx.lineTo(x + width / 2, y - height / 2);
-  ctx.lineTo(x + width, y);
   ctx.lineTo(x + width / 2, y + height / 2);
+  ctx.lineTo(x, y + height);
+  ctx.lineTo(x - width / 2, y + height / 2);
   ctx.lineTo(x, y);
   ctx.stroke();
 };
@@ -172,7 +152,7 @@ Environment.prototype.renderForeground = function renderForeground(ctx, camera) 
 Environment.prototype.isOutOfBounds = function(boundingBox) {
   let oob = false;
   for (var i = 0; i < this.bounds.length; i++) {
-    if (intersectIsometric(boundingBox, this.bounds[i])) {
+    if (this.intersectIsometric(boundingBox, this.bounds[i])) {
       oob = true;
       break;
     }
@@ -180,5 +160,38 @@ Environment.prototype.isOutOfBounds = function(boundingBox) {
 
   return oob;
 };
+
+Environment.prototype.intersectIsometric = function(r1, r2) {
+  // Check outer bounding box first
+  if (!intersectRect(r1, r2)) {
+    return false;
+  }
+
+  let r1w = r1.right - r1.left;
+  let r1h = r1.bottom - r1.top;
+
+  let r2w = r2.right - r2.left;
+  let r2h = r2.bottom - r2.top;
+
+  var poly1 = turf.polygon([[
+    [r1.left, r1.top],
+    [r1.left + r1w / 2, r1.top + r1h / 2],
+    [r1.left, r1.top + r1h],
+    [r1.left - r1w / 2, r1.top + r1h / 2],
+    [r1.left, r1.top]
+  ]]);
+   
+  var poly2 = turf.polygon([[
+    [r2.left, r2.top],
+    [r2.left + r2w / 2, r2.top + r2h / 2],
+    [r2.left, r2.top + r2h],
+    [r2.left - r2w / 2, r2.top + r2h / 2],
+    [r2.left, r2.top]
+  ]]);
+   
+  var overlapping = overlaps(poly1, poly2);
+  return overlapping;
+};
+
 
 module.exports = new Environment();

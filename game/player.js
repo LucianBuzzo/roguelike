@@ -103,11 +103,11 @@ Player.prototype.render = function render(ctx, camera) {
     let boxHeight = box.bottom - box.top;
     ctx.moveTo(box.left, box.top);
 
-    ctx.lineTo(box.left + boxWidth / 2, box.top - boxHeight / 2);
-
-    ctx.lineTo(box.left + boxWidth, box.top);
-
     ctx.lineTo(box.left + boxWidth / 2, box.top + boxHeight / 2);
+
+    ctx.lineTo(box.left, box.top + boxHeight);
+
+    ctx.lineTo(box.left - boxWidth / 2, box.top + boxHeight / 2);
 
     ctx.lineTo(box.left, box.top);
 
@@ -186,12 +186,13 @@ Player.prototype.update = function update(environment) {
 
 // Returns bounding box, this is the players 'footprint';
 Player.prototype.getBB = function getBoundingBox() {
-  let boundY = this.y + 30;
+  let boundY = this.y + 22;
+  let boundX = this.x + this.width / 2;
 
   return {
     top: boundY,
-    left: this.x,
-    right: this.x + this.width,
+    left: boundX,
+    right: boundX + this.width,
     bottom: boundY + this.width / 2
   };
 };

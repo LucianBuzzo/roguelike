@@ -8,6 +8,7 @@ const environment = require('./environment');
 const canvas = document.getElementById('main-canvas');
 const ctx = canvas.getContext('2d');
 
+
 ctx.imageSmoothingEnabled = false;
 
 canvas.width = 480;
@@ -64,7 +65,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
     player.addDirection('right');
   }
-  console.log(e);
 });
 
 document.addEventListener('keyup', function(e) {
@@ -88,13 +88,16 @@ const debugMap = function(dungeon) {
   const canvas = document.getElementById('debug-canvas');
   const ctx = canvas.getContext('2d');
 
+
+  window.CTX = ctx;
+
   ctx.imageSmoothingEnabled = false;
 
-  canvas.width = 480;
-  canvas.height = 270;
+  canvas.width = 1200;
+  canvas.height = 900;
 
-  canvas.style.width = '960px';
-  canvas.style.height = '540px';
+  //canvas.style.width = '960px';
+  //canvas.style.height = '540px';
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
