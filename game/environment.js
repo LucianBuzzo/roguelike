@@ -14,12 +14,41 @@ var Environment = function Environment() {
   this.debug = global.DEBUG;
   this.x = 0;
   this.y = 0;
-  this.bounds = [{
-    top: 80,
-    left: -4,
-    right: -1,
-    bottom: 110
-  }];
+  this.bounds = [];
+
+  this.setBounds();
+};
+
+Environment.prototype.setBounds = function setBounds() {
+  this.bounds = [];
+
+  for (var i = 0; i < this.dungeon.tiles.length; i++) {
+    for (var j = 0; j < this.dungeon.tiles.length; j++) {
+      if (this.dungeon.tiles[i][j].type === 'wall') {
+        this.bounds.push({
+          top: j * this.tileHeight,
+          left: i * this.tileWidth,
+          right: i * this.tileWidth + this.tileWidth,
+          bottom: j * this.tileHeight + this.tileHeight
+        });
+      }
+    }
+  }
+};
+
+Environment.prototype.findStart = function findStart() {
+  var startX;
+  var startY;
+  for (var x = 0; x < this.dungeon.tiles.length; x++) {
+    for (var y = 0; y < this.dungeon.tiles.length; y++) {
+      if (this.dungeon.tiles[x][y].type !== 'wall') {
+        startX = x * this.tileWidth;
+        startY = y * this.tileHeight;
+      }
+    }
+  }
+
+  return [startX, startY];
 };
 
 Environment.prototype.update = function update() {

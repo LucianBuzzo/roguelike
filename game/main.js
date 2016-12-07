@@ -1,5 +1,5 @@
 
-global.DEBUG = false;
+global.DEBUG = true;
 
 const player = require('./player');
 const Camera = require('./camera');
@@ -15,6 +15,11 @@ canvas.height = 270;
 
 canvas.style.width = '960px';
 canvas.style.height = '540px';
+
+let [startX, startY] = environment.findStart();
+
+player.x = startX;
+player.y = startY;
 
 const camera = new Camera(canvas, 0, 0);
 
