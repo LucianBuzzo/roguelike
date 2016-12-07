@@ -79,16 +79,10 @@ const Dungeon = function Dungeon() {
 
   var _rooms = [];
 
-  // For each open position in the dungeon, the index of the connected region
-  // that that position is a part of.
-  var _regions = [];
-
   // The index of the current region being carved.
   var _currentRegion = -1;
 
   var stage;
-
-  const bounds = () => stage.bounds;
 
   const bindStage = (givenStage) => {
     stage = givenStage;
@@ -153,42 +147,6 @@ const Dungeon = function Dungeon() {
         tiles[x][y].setNeighbours(neighbours);
         tiles[x][y].nesw = nesw;
       }
-    }
-  };
-
-  // Randomly turns some [wall] tiles into [floor] and vice versa.
-  const erode = (iterations, {floor, wall}) => {
-    if (floor === null) {
-      floor = Tiles.floor;
-    }
-    if (wall === null) {
-      wall = Tiles.wall;
-    }
-
-    let bounds = stage.bounds.inflate(-1);
-    for (var i = 0; i < iterations; i++) {
-      // TODO: This way this works is super inefficient. Would be better to
-      // keep track of the floor tiles near open ones and choose from them.
-      var pos = rng.vecInRect(bounds);
-
-      var here = getTile(pos);
-      if (here !== wall) {
-        continue;
-      }
-
-      // Keep track of how many floors we're adjacent too. We will only erode
-      // if we are directly next to a floor.
-      var floors = 0;
-
-      for (var dir in Direction.ALL) {
-        var tile = getTile(pos + dir);
-        if (tile == floor) floors++;
-      }
-
-      // Prefer to erode tiles near more floor tiles so the erosion isn't too
-      // spiky.
-      if (floors < 2) continue;
-      if (rng.oneIn(9 - floors)) setTile(pos, floor);
     }
   };
 
