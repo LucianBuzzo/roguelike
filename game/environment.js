@@ -76,7 +76,7 @@ Environment.prototype.findStart = function findStart() {
     }
   }
 
-  return [startX, startY];
+  return U.cart2Iso(startX, startY);
 };
 
 Environment.prototype.update = function update() {

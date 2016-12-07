@@ -1,5 +1,5 @@
 
-global.DEBUG = true;
+global.DEBUG = false;
 
 const player = require('./player');
 const Camera = require('./camera');
@@ -124,4 +124,6 @@ const debugMap = function(dungeon) {
   }
 };
 
-debugMap(environment.dungeon);
+if (global.DEBUG) {
+  debugMap(environment.dungeon);
+}
