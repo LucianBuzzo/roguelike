@@ -75,11 +75,11 @@ document.addEventListener('keyup', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
     player.removeDirection('right');
   }
-  console.log(e);
 });
 
-// main();
+main();
 
+/*
 var Dungeon = require('./dungeonGenerator.js');
 
 var dungeon = new Dungeon().generate({
@@ -110,3 +110,4 @@ for (var i = 0; i < dungeon.tiles.length; i++) {
     }
   }
 }
+*/

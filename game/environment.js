@@ -1,63 +1,28 @@
+var Dungeon = require('./dungeonGenerator.js');
+
 var Environment = function Environment() {
-  var img = new Image();
-  img.src = './assets/environment/street/street1-small.png';
+  this.numTilesX = 51;
+  this.numTilesY = 51;
+  this.dungeon = new Dungeon().generate({
+    width: this.numTilesX,
+    height: this.numTilesY
+  });
 
-  var foregroundImg = new Image();
-  foregroundImg.src = './assets/environment/street/street1-foreground.png';
-
-  var backgroundImg1 = new Image();
-  backgroundImg1.src = './assets/environment/street/street1-background1.png';
-
-  var backgroundImg2 = new Image();
-  backgroundImg2.src = './assets/environment/street/street1-background2.png';
+  this.tileWidth = 80;
+  this.tileHeight = 40;
 
   this.debug = global.DEBUG;
-  this.img = img;
-  this.foregroundImg = foregroundImg;
-  this.backgroundImgs = [backgroundImg1, backgroundImg2];
-  this.bgImageIndex = 0;
   this.x = 0;
   this.y = 0;
-  this.height = 500;
-  this.width = 500;
   this.bounds = [{
     top: 80,
     left: -4,
     right: -1,
     bottom: 110
-  }, {
-    top: 80,
-    left: 188,
-    right: 200,
-    bottom: 96
-  }, {
-    top: 122,
-    left: 188,
-    right: 500,
-    bottom: 400
-  }, {
-    top: 80,
-    left: 203,
-    right: 500,
-    bottom: 120
-  }, {
-    top: 105,
-    left: 0,
-    right: 96,
-    bottom: 365
-  }, {
-    top: 0,
-    left: 0,
-    right: 500,
-    bottom: 82
   }];
 };
 
 Environment.prototype.update = function update() {
-  this.bgImageIndex++;
-  if (this.bgImageIndex > 100) {
-    this.bgImageIndex = 0;
-  }
 };
 
 Environment.prototype.render = function render(ctx, camera) {
@@ -68,10 +33,29 @@ Environment.prototype.render = function render(ctx, camera) {
 
   ctx.translate(camera.offsetX, camera.offsetY);
 
-  let index = this.bgImageIndex < 50 ? 0 : 1;
-  ctx.drawImage(this.backgroundImgs[index], 40 - camera.offsetX / 5, 40 - camera.offsetY / 5);
+  ctx.fillStyle = 'red';
 
-  ctx.drawImage(this.img, 0, 0);
+  this.dungeon.rooms.forEach((room) => {
+    ctx.fillRect(
+      room.x * this.tileWidth,
+      room.y * this.tileHeight,
+      room.width * this.tileWidth,
+      room.height * this.tileHeight
+    );
+  });
+
+  for (var i = 0; i < this.dungeon.tiles.length; i++) {
+    for (var j = 0; j < this.dungeon.tiles.length; j++) {
+      if (this.dungeon.tiles[i][j].type === 'floor') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillRect(i * this.tileWidth, j * this.tileHeight, this.tileWidth, this.tileHeight);
+      }
+      if (this.dungeon.tiles[i][j].type === 'door') {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(i * this.tileWidth, j * this.tileHeight, this.tileWidth, this.tileHeight);
+      }
+    }
+  }
 
 
   if (this.debug) {
@@ -87,7 +71,7 @@ Environment.prototype.render = function render(ctx, camera) {
 Environment.prototype.renderForeground = function renderForeground(ctx, camera) {
   ctx.save();
   ctx.translate(camera.offsetX, camera.offsetY);
-  ctx.drawImage(this.foregroundImg, 0, 0);
+  // ctx.drawImage(this.foregroundImg, 0, 0);
   ctx.restore();
 };
 
