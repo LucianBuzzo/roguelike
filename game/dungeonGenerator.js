@@ -5,14 +5,30 @@
 
 var _ = require('underscore');
 
-const Rect = function Rect(x, y, width, height) {
+/**
+ * @desc Helper class for drawing rooms when generating dungeons
+ * @constructor
+ *
+ * @param {Number} x - The x coordinate of the top side of the room
+ * @param {Number} y - The y coordinate of the left hand side of the room
+ * @param {Number} width - The width of the room
+ * @param {Number} height - The height of the room
+ */
+const Room = function Room(x, y, width, height) {
   this.x = x;
   this.y = y;
   this.width = width;
   this.height = height;
 };
 
-Rect.prototype.getBoundingBox = function getBoundingBox() {
+/**
+ * @desc Returns the bounding box for this room
+ * @function
+ *
+ * @returns {Object} - Bounding box object containing a top, right, bottom and
+ * left value.
+ */
+Room.prototype.getBoundingBox = function getBoundingBox() {
   return {
     top: this.y,
     right: this.x + this.width,
@@ -21,7 +37,18 @@ Rect.prototype.getBoundingBox = function getBoundingBox() {
   };
 };
 
-Rect.prototype.intersects = function intersects(other) {
+/**
+ * @desc Compares this room with an entity that has a bounding box method to see
+ * if they intersect.
+ *
+ * @param {Object} other - An object with a getBoundingBox() method
+ *
+ * @returns {Boolean} - true if there is an intersection
+ */
+Room.prototype.intersects = function intersects(other) {
+  if (!other.getBoundingBox) {
+    throw new Error('Given entity has no method getBoundingBox');
+  }
   var r1 = this.getBoundingBox();
   var r2 = other.getBoundingBox();
 
@@ -31,17 +58,31 @@ Rect.prototype.intersects = function intersects(other) {
            r2.bottom < r1.top);
 };
 
+/**
+ * @desc Class for a single tilein a dungeon
+ * @constructor
+ *
+ * @param {String} type - The type of tile, e.g. 'wall', 'floor'
+ */
 const Tile = function Tile(type) {
   this.type = type;
   this.neighbours = [];
 };
 
+/**
+ * @desc Sets an array containing this tiles immediate neighbours
+ *
+ * @param {Object[]} neighbours - An array of neighbouring Tiles
+ *
+ * @return {Object} - returns the Tile object, useful for chaining
+ */
 Tile.prototype.setNeighbours = function(neighbours) {
   this.neighbours = neighbours;
+  return this;
 };
 
 /**
- * The random dungeon generator.
+ * @desc The random dungeon generator.
  *
  * Starting with a stage of solid walls, it works like so:
  *
@@ -66,7 +107,7 @@ Tile.prototype.setNeighbours = function(neighbours) {
  * The end result of this is a multiply-connected dungeon with rooms and lots
  * of winding corridors.
  *
- * @returns {Object} - Tile information for the dungeon
+ * @constructor
  */
 const Dungeon = function Dungeon() {
   var numRoomTries = 50;
@@ -92,19 +133,48 @@ const Dungeon = function Dungeon() {
     stage = givenStage;
   };
 
+  let _tiles = [];
+
+  /**
+   * @desc returns a tile at the provided coordinates
+   *
+   * @param {Number} x - The x coordinate to retrieve
+   * @param {Number} y - The y coordinate to retrieve
+   *
+   * @returns {Object} - A Tile object
+   */
   const getTile = (x, y) => {
-    return tiles[x][y];
+    return _tiles[x][y];
   };
 
-  let tiles = [];
-
+  /**
+   * @desc Sets a tile's type and region
+   *
+   * @param {Number} x - The x coordinate of the tile to set
+   * @param {Number} y - The y coordinate of the tile to set
+   * @param {String} type - The type to set on the tile
+   *
+   * @returns {Object} - The Tile object or null if the tile was not found
+   *
+   */
   const setTile = (x, y, type) => {
-    if (tiles[x] && tiles[x][y]) {
-      tiles[x][y].type = type;
-      tiles[x][y].region = _currentRegion;
+    if (_tiles[x] && _tiles[x][y]) {
+      _tiles[x][y].type = type;
+      _tiles[x][y].region = _currentRegion;
+
+      return _tiles[x][y];
     }
+
+    return null;
   };
 
+  /**
+   * @desc Generates tile data to the dimension of the stage.
+   *
+   * @param {String} type - The tile type to set on newly created tiles
+   *
+   * @returns {Array} - The _tiles array
+   */
   const fill = (type) => {
     let neighbours = [];
     let nesw = {};
@@ -112,9 +182,9 @@ const Dungeon = function Dungeon() {
     var y;
 
     for (x = 0; x < stage.width; x++) {
-      tiles.push([]);
+      _tiles.push([]);
       for (y = 0; y < stage.height; y++) {
-        tiles[x].push(new Tile(type));
+        _tiles[x].push(new Tile(type));
       }
     }
 
@@ -122,40 +192,50 @@ const Dungeon = function Dungeon() {
       for (y = 0; y < stage.height; y++) {
         neighbours = [];
         nesw = {};
-        if (tiles[x][y - 1]) {
-          neighbours.push(tiles[x][y - 1]);
-          nesw.north = tiles[x][y - 1];
+        if (_tiles[x][y - 1]) {
+          neighbours.push(_tiles[x][y - 1]);
+          nesw.north = _tiles[x][y - 1];
         }
-        if (tiles[x + 1] && tiles[x + 1][y - 1]) {
-          neighbours.push(tiles[x + 1][y - 1]);
+        if (_tiles[x + 1] && _tiles[x + 1][y - 1]) {
+          neighbours.push(_tiles[x + 1][y - 1]);
         }
-        if (tiles[x + 1] && tiles[x + 1][y]) {
-          neighbours.push(tiles[x + 1][y]);
-          nesw.east = tiles[x + 1][y];
+        if (_tiles[x + 1] && _tiles[x + 1][y]) {
+          neighbours.push(_tiles[x + 1][y]);
+          nesw.east = _tiles[x + 1][y];
         }
-        if (tiles[x + 1] && tiles[x + 1][y + 1]) {
-          neighbours.push(tiles[x + 1][y + 1]);
+        if (_tiles[x + 1] && _tiles[x + 1][y + 1]) {
+          neighbours.push(_tiles[x + 1][y + 1]);
         }
-        if (tiles[x] && tiles[x][y + 1]) {
-          neighbours.push(tiles[x][y + 1]);
-          nesw.south = tiles[x][y + 1];
+        if (_tiles[x] && _tiles[x][y + 1]) {
+          neighbours.push(_tiles[x][y + 1]);
+          nesw.south = _tiles[x][y + 1];
         }
-        if (tiles[x - 1] && tiles[x - 1][y + 1]) {
-          neighbours.push(tiles[x - 1][y + 1]);
+        if (_tiles[x - 1] && _tiles[x - 1][y + 1]) {
+          neighbours.push(_tiles[x - 1][y + 1]);
         }
-        if (tiles[x - 1] && tiles[x - 1][y]) {
-          neighbours.push(tiles[x - 1][y]);
-          nesw.west = tiles[x - 1][y];
+        if (_tiles[x - 1] && _tiles[x - 1][y]) {
+          neighbours.push(_tiles[x - 1][y]);
+          nesw.west = _tiles[x - 1][y];
         }
-        if (tiles[x - 1] && tiles[x - 1][y - 1]) {
-          neighbours.push(tiles[x - 1][y - 1]);
+        if (_tiles[x - 1] && _tiles[x - 1][y - 1]) {
+          neighbours.push(_tiles[x - 1][y - 1]);
         }
-        tiles[x][y].setNeighbours(neighbours);
-        tiles[x][y].nesw = nesw;
+        _tiles[x][y].setNeighbours(neighbours);
+        _tiles[x][y].nesw = nesw;
       }
     }
+
+    return _tiles;
   };
 
+  /**
+   * @desc Master function for generating a dungeon
+   *
+   * @param {Object} stage - An object with a width key and a height key. Used
+   * to determine the size of the dungeon. Must be odd with and height.
+   *
+   * @returns {Object} - Tile information for the dungeon
+   */
   const generate = (stage) => {
     if (stage.width % 2 === 0 || stage.height % 2 === 0) {
       throw new Error('The stage must be odd-sized.');
@@ -185,23 +265,28 @@ const Dungeon = function Dungeon() {
 
     return {
       rooms: _rooms,
-      tiles: tiles,
+      tiles: _tiles,
     };
   };
 
-  // Implementation of the "growing tree" algorithm from here:
-  // http://www.astrolog.org/labyrnth/algrithm.htm.
+  /**
+   * @desc Implementation of the "growing tree" algorithm from here:
+   * http://www.astrolog.org/labyrnth/algrithm.htm.
+   *
+   * @param {Number} startX - The x coordinate to start at
+   * @param {Number} startY - The y coordinate to start at
+   *
+   * @returns {void}
+   */
   const _growMaze = (startX, startY) => {
     var cells = [];
     var lastDir;
 
-    if (tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
+    if (_tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
       return;
     }
 
     _startRegion();
-
-    // _carve(startX, startY);
 
     cells.push({x: startX, y: startY });
     let count = 0;
@@ -282,9 +367,15 @@ const Dungeon = function Dungeon() {
     }
   };
 
-  // Places rooms ignoring the existing maze corridors.
+  /**
+   * @desc Creates rooms in the dungeon by repeatedly creating random rooms and
+   * seeing if they overlap. Rooms that overlap are discarded. This process is
+   * repeated until it hits the maximum tries determined by the 'numRoomTries'
+   * variable.
+   *
+   * @returns {void}
+   */
   const _addRooms = () => {
-    console.log('adding rooms');
     for (var i = 0; i < numRoomTries; i++) {
       // Pick a random room size. The funny math here does two things:
       // - It makes sure rooms are odd-sized to line up with maze.
@@ -303,7 +394,7 @@ const Dungeon = function Dungeon() {
       var x = _.random(0, Math.floor((stage.width - width) / 2)) * 2 + 1;
       var y = _.random(0, Math.floor((stage.height - height) / 2)) * 2 + 1;
 
-      var room = new Rect(x, y, width, height);
+      var room = new Room(x, y, width, height);
 
       var overlaps = false;
 
@@ -327,6 +418,16 @@ const Dungeon = function Dungeon() {
     }
   };
 
+  /**
+   * @desc converts an area of tiles to floor type
+   *
+   * @param {Number} x - The starting x coordinate
+   * @param {Number} y - The starting y coordinate
+   * @param {Number} width - The width of the area to carve
+   * @param {Number} height - The height of the area to carve
+   *
+   * @returns {void}
+   */
   const carveArea = (x, y, width, height) => {
     for (var i = x; i < x + width; i++) {
       for (var j = y; j < y + height; j++) {
@@ -335,9 +436,14 @@ const Dungeon = function Dungeon() {
     }
   };
 
+  /**
+   * @desc Creates doorways between each generated region of tiles
+   *
+   * @return {void}
+   */
   const _connectRegions = () => {
     let regionConnections = {};
-    tiles.forEach(row => {
+    _tiles.forEach(row => {
       row.forEach(tile => {
         if (tile.type === 'floor') {
           return;
@@ -374,16 +480,32 @@ const Dungeon = function Dungeon() {
     });
   };
 
+  /**
+   * @desc Helper function for calculating random chance. The higher the number
+   * provided the less likely this value is to return true.
+   *
+   * @param {Number} num - The ceiling number that could be calculated
+   *
+   * @returns {Boolean} - True if the function rolled a one
+   *
+   * @example
+   * _oneIn(50); // - Has a 1 in 50 chance of returning true
+   */
   const _oneIn = (num) => {
     return _.random(1, num) === 1;
   };
 
+  /**
+   * @desc Fills in dead ends in the dungeon with wall tiles
+   *
+   * @returns {void}
+   */
   const _removeDeadEnds = () => {
     var done = false;
 
     const cycle = () => {
       let done = true;
-      tiles.forEach((row) => {
+      _tiles.forEach((row) => {
         row.forEach((tile) => {
           // If it only has one exit, it's a dead end --> fill it in!
           if (tile.type === 'wall') {
@@ -405,13 +527,17 @@ const Dungeon = function Dungeon() {
     }
   };
 
-  // Gets whether or not an opening can be carved from the given starting
-  // [Cell] at [pos] to the adjacent Cell facing [direction]. Returns `true`
-  // if the starting Cell is in bounds and the destination Cell is filled
-  // (or out of bounds).</returns>
+  /**
+   * @desc Checks if a tile at given coordinates can be carved
+   *
+   * @param {Number} x - The x coordinate to check
+   * @param {Number} y - The y coordinate to check
+   *
+   * @returns {Boolean} - true if the tile can be carved
+   */
   const _canCarve = (x, y) => {
     // Must end in bounds.
-    if (!tiles[x] || !tiles[x][y]) {
+    if (!_tiles[x] || !_tiles[x][y]) {
       return false;
     }
 
@@ -419,10 +545,27 @@ const Dungeon = function Dungeon() {
     return getTile(x, y).type !== 'floor';
   };
 
+  /**
+   * @desc Increments the current region. Typically called every time a new area
+   * starts being carved
+   *
+   * @returns {Number} - The current region number
+   */
   const _startRegion = () => {
     _currentRegion++;
+    return _currentRegion;
   };
 
+  /**
+   * @desc Changes the Tile at a given coordinate to a provided type. Typically
+   * used to change the type to 'floor'
+   *
+   * @param {Number} x - The x coordinate to change
+   * @param {Number} y - The y coordinate to change
+   * @param {String} type - The type to change the tile to. Defaults to 'floor'
+   *
+   * @returns {void}
+   */
   const _carve = (x, y, type = 'floor') => {
     setTile(x, y, type);
   };
