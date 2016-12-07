@@ -20,8 +20,8 @@ var Environment = function Environment() {
     height: this.numTilesY
   });
 
-   this.tileWidth = 80;
-   this.tileHeight = 40;
+   this.tileWidth = 160;
+   this.tileHeight = 80;
 //   this.tileWidth = 20;
 //   this.tileHeight = 10;
 

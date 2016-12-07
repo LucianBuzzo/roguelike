@@ -2,18 +2,18 @@ var U = require('./utils.js');
 
 const Player = function Player() {
   var playerImageMoving = new Image();
-  playerImageMoving.src = './assets/player/player2-spritesheet.png';
+  playerImageMoving.src = './assets/player/knight-idle.png';
 
   var playerImageIdle = new Image();
-  playerImageIdle.src = './assets/player/player2-idle.png';
+  playerImageIdle.src = './assets/player/knight-idle.png';
 
   this.debug = global.DEBUG;
   this.loaded = false;
   this.speed = 2;
   this.imgMoving = playerImageMoving;
   this.imgIdle = playerImageIdle;
-  this.width = 32;
-  this.height = 32;
+  this.width = 64;
+  this.height = 64;
   this.frame = 0;
   this.tickCount = 0;
   this.x = 80;
@@ -22,68 +22,16 @@ const Player = function Player() {
   this.direction = [];
   this.moving = false;
   this.frames = {
-    up: [
-      { x: 0, y: 0 },
-      { x: 32, y: 0 },
-      { x: 64, y: 0 },
-      { x: 96, y: 0 },
-      { x: 128, y: 0 },
-      { x: 160, y: 0 },
-      { x: 192, y: 0 },
-      { x: 224, y: 0 },
-      { x: 256, y: 0 },
-      { x: 288, y: 0 },
-      { x: 320, y: 0 },
-      { x: 352, y: 0 },
-    ],
-    down: [
-      { x: 0, y: 32 },
-      { x: 32, y: 32 },
-      { x: 64, y: 32 },
-      { x: 96, y: 32 },
-      { x: 128, y: 32 },
-      { x: 160, y: 32 },
-      { x: 192, y: 32 },
-      { x: 224, y: 32 },
-      { x: 256, y: 32 },
-      { x: 288, y: 32 },
-      { x: 320, y: 32 },
-      { x: 352, y: 32 },
-    ],
-    left: [
-      { x: 0, y: 64 },
-      { x: 32, y: 64 },
-      { x: 64, y: 64 },
-      { x: 96, y: 64 },
-      { x: 128, y: 64 },
-      { x: 160, y: 64 },
-      { x: 192, y: 64 },
-      { x: 224, y: 64 },
-      { x: 256, y: 64 },
-      { x: 288, y: 64 },
-      { x: 320, y: 64 },
-      { x: 352, y: 64 },
-    ],
-    right: [
-      { x: 0, y: 96 },
-      { x: 32, y: 96 },
-      { x: 64, y: 96 },
-      { x: 96, y: 96 },
-      { x: 128, y: 96 },
-      { x: 160, y: 96 },
-      { x: 192, y: 96 },
-      { x: 224, y: 96 },
-      { x: 256, y: 96 },
-      { x: 288, y: 96 },
-      { x: 320, y: 96 },
-      { x: 352, y: 96 },
-    ],
+    up: [{ x: 0, y: 0 }],
+    down: [{ x: 64, y: 0 }],
+    left: [{ x: 128, y: 0 }],
+    right: [{ x: 192, y: 0 }],
   };
   this.idleFrames = {
     up: { x: 0, y: 0 },
-    down: { x: 0, y: 32 },
-    left: { x: 0, y: 64 },
-    right: { x: 0, y: 96 },
+    down: { x: 64, y: 0 },
+    left: { x: 128, y: 0 },
+    right: { x: 192, y: 0 },
   };
 };
 
