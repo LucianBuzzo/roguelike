@@ -5,7 +5,7 @@ const player = require('./player');
 const Camera = require('./camera');
 const environment = require('./environment');
 
-const canvas = document.querySelector('canvas');
+const canvas = document.getElementById('main-canvas');
 const ctx = canvas.getContext('2d');
 
 ctx.imageSmoothingEnabled = false;
@@ -84,35 +84,41 @@ document.addEventListener('keyup', function(e) {
 
 main();
 
-/*
-var Dungeon = require('./dungeonGenerator.js');
+const debugMap = function(dungeon) {
+  const canvas = document.getElementById('debug-canvas');
+  const ctx = canvas.getContext('2d');
 
-var dungeon = new Dungeon().generate({
-  width: 51,
-  height: 51
-});
+  ctx.imageSmoothingEnabled = false;
 
-ctx.fillStyle = 'black';
-ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  canvas.width = 480;
+  canvas.height = 270;
 
-ctx.fillStyle = 'red';
+  canvas.style.width = '960px';
+  canvas.style.height = '540px';
 
-dungeon.rooms.forEach((room) => {
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
   ctx.fillStyle = 'red';
-  ctx.fillRect(room.x * 2, room.y * 2, room.width * 2, room.height * 2);
-});
 
-ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-for (var i = 0; i < dungeon.tiles.length; i++) {
-  for (var j = 0; j < dungeon.tiles.length; j++) {
-    if (dungeon.tiles[i][j].type === 'floor') {
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.fillRect(i * 2, j * 2, 2, 2);
-    }
-    if (dungeon.tiles[i][j].type === 'door') {
-      ctx.fillStyle = 'yellow';
-      ctx.fillRect(i * 2, j * 2, 2, 2);
+  dungeon.rooms.forEach((room) => {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(room.x * 2, room.y * 2, room.width * 2, room.height * 2);
+  });
+
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+  for (var i = 0; i < dungeon.tiles.length; i++) {
+    for (var j = 0; j < dungeon.tiles.length; j++) {
+      if (dungeon.tiles[i][j].type === 'floor') {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillRect(i * 2, j * 2, 2, 2);
+      }
+      if (dungeon.tiles[i][j].type === 'door') {
+        ctx.fillStyle = 'yellow';
+        ctx.fillRect(i * 2, j * 2, 2, 2);
+      }
     }
   }
-}
-*/
+};
+
+debugMap(environment.dungeon);
