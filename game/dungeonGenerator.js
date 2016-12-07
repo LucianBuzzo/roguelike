@@ -70,7 +70,7 @@ const Dungeon = function Dungeon() {
   // The inverse chance of adding a connector between two regions that have
   // already been joined. Increasing this leads to more loosely connected
   // dungeons.
-  var extraConnectorChance = 20;
+  var extraConnectorChance = 50;
 
   // Increasing this allows rooms to be larger.
   var roomExtraSize = 0;
@@ -113,13 +113,13 @@ const Dungeon = function Dungeon() {
 
     for (var x = 0; x < stage.width; x++) {
       tiles.push([]);
-      for (var y = 0; y < stage.height; y++) {  
+      for (var y = 0; y < stage.height; y++) {
         tiles[x].push(new Tile(type));
       }
     }
 
     for (var x = 0; x < stage.width; x++) {
-      for (var y = 0; y < stage.height; y++) {  
+      for (var y = 0; y < stage.height; y++) {
         neighbours = [];
         nesw = {};
         if (tiles[x][y - 1]) {
@@ -200,7 +200,7 @@ const Dungeon = function Dungeon() {
     bindStage(stage);
 
     fill('wall');
-   
+
     _addRooms();
 
     // Fill in all of the empty space with mazes.
@@ -215,7 +215,7 @@ const Dungeon = function Dungeon() {
       }
     }
 
-    
+
     _connectRegions();
 
     _removeDeadEnds();
@@ -238,7 +238,7 @@ const Dungeon = function Dungeon() {
     var cells = [];
     var lastDir;
 
-    
+
 
     if (tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
       return;
@@ -387,7 +387,7 @@ const Dungeon = function Dungeon() {
         if (tile.type === 'floor') {
           return;
         }
-        
+
         let tileRegions = _.unique(
           _.values(tile.nesw).map(x => x.region)
           .filter(x => !_.isUndefined(x))
@@ -401,18 +401,18 @@ const Dungeon = function Dungeon() {
           regionConnections[key] = [];
         }
         regionConnections[key].push(tile);
-      
+
       });
     });
 
-    _.each(regionConnections, (connections, key) => {
+    _.each(regionConnections, (connections) => {
       let index = _.random(0, connections.length - 1);
       connections[index].type = 'door';
       connections.splice(index, 1);
-      
+
       // Occasional open up additional connections
       connections.forEach(conn => {
-        if (_oneIn(50)) {
+        if (_oneIn(extraConnectorChance)) {
           conn.type = 'door';
         }
       });
