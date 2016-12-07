@@ -40,30 +40,34 @@ Tile.prototype.setNeighbours = function(neighbours) {
   this.neighbours = neighbours;
 };
 
-// The random dungeon generator.
-//
-// Starting with a stage of solid walls, it works like so:
-//
-// 1. Place a number of randomly sized and positioned rooms. If a room
-//    overlaps an existing room, it is discarded. Any remaining rooms are
-//    carved out.
-// 2. Any remaining solid areas are filled in with mazes. The maze generator
-//    will grow and fill in even odd-shaped areas, but will not touch any
-//    rooms.
-// 3. The result of the previous two steps is a series of unconnected rooms
-//    and mazes. We walk the stage and find every tile that can be a
-//    "connector". This is a solid tile that is adjacent to two unconnected
-//    regions.
-// 4. We randomly choose connectors and open them or place a door there until
-//    all of the unconnected regions have been joined. There is also a slight
-//    chance to carve a connector between two already-joined regions, so that
-//    the dungeon isn't single connected.
-// 5. The mazes will have a lot of dead ends. Finally, we remove those by
-//    repeatedly filling in any open tile that's closed on three sides. When
-//    this is done, every corridor in a maze actually leads somewhere.
-//
-// The end result of this is a multiply-connected dungeon with rooms and lots
-// of winding corridors.
+/**
+ * The random dungeon generator.
+ *
+ * Starting with a stage of solid walls, it works like so:
+ *
+ * 1. Place a number of randomly sized and positioned rooms. If a room
+ *    overlaps an existing room, it is discarded. Any remaining rooms are
+ *    carved out.
+ * 2. Any remaining solid areas are filled in with mazes. The maze generator
+ *    will grow and fill in even odd-shaped areas, but will not touch any
+ *    rooms.
+ * 3. The result of the previous two steps is a series of unconnected rooms
+ *    and mazes. We walk the stage and find every tile that can be a
+ *    "connector". This is a solid tile that is adjacent to two unconnected
+ *    regions.
+ * 4. We randomly choose connectors and open them or place a door there until
+ *    all of the unconnected regions have been joined. There is also a slight
+ *    chance to carve a connector between two already-joined regions, so that
+ *    the dungeon isn't single connected.
+ * 5. The mazes will have a lot of dead ends. Finally, we remove those by
+ *    repeatedly filling in any open tile that's closed on three sides. When
+ *    this is done, every corridor in a maze actually leads somewhere.
+ *
+ * The end result of this is a multiply-connected dungeon with rooms and lots
+ * of winding corridors.
+ *
+ * @returns {Object} - Tile information for the dungeon
+ */
 const Dungeon = function Dungeon() {
   var numRoomTries = 50;
 
@@ -104,16 +108,18 @@ const Dungeon = function Dungeon() {
   const fill = (type) => {
     let neighbours = [];
     let nesw = {};
+    var x;
+    var y;
 
-    for (var x = 0; x < stage.width; x++) {
+    for (x = 0; x < stage.width; x++) {
       tiles.push([]);
-      for (var y = 0; y < stage.height; y++) {
+      for (y = 0; y < stage.height; y++) {
         tiles[x].push(new Tile(type));
       }
     }
 
-    for (var x = 0; x < stage.width; x++) {
-      for (var y = 0; y < stage.height; y++) {
+    for (x = 0; x < stage.width; x++) {
+      for (y = 0; y < stage.height; y++) {
         neighbours = [];
         nesw = {};
         if (tiles[x][y - 1]) {
@@ -164,8 +170,7 @@ const Dungeon = function Dungeon() {
     // Fill in all of the empty space with mazes.
     for (var y = 0; y < stage.height; y++) {
       for (var x = 0; x < stage.width; x++) {
-        //var pos = new Vec(x, y);
-        //if (getTile(pos) != Tiles.wall) continue;
+        // Skip the maze generation if the tile is already carved
         if (getTile(x, y).type === 'floor') {
           continue;
         }
@@ -178,17 +183,11 @@ const Dungeon = function Dungeon() {
 
     _removeDeadEnds();
 
-    /*
-    _rooms.forEach(onDecorateRoom);
-    */
-
-   return {
-     rooms: _rooms,
-     tiles: tiles,
-   };
+    return {
+      rooms: _rooms,
+      tiles: tiles,
+    };
   };
-
-  const onDecorateRoom = (room) => {};
 
   // Implementation of the "growing tree" algorithm from here:
   // http://www.astrolog.org/labyrnth/algrithm.htm.
@@ -196,15 +195,13 @@ const Dungeon = function Dungeon() {
     var cells = [];
     var lastDir;
 
-
-
     if (tiles[startX][startY].neighbours.filter(x => x.type === 'floor').length > 0) {
       return;
     }
 
     _startRegion();
 
-    _carve(startX, startY);
+    // _carve(startX, startY);
 
     cells.push({x: startX, y: startY });
     let count = 0;
@@ -293,12 +290,11 @@ const Dungeon = function Dungeon() {
       // - It makes sure rooms are odd-sized to line up with maze.
       // - It avoids creating rooms that are too rectangular: too tall and
       //   narrow or too wide and flat.
-      // TODO: This isn't very flexible or tunable. Do something better here.
       var size = _.random(1, 3 + roomExtraSize) * 2 + 1;
       var rectangularity = _.random(0, 1 + Math.floor(size / 2)) * 2;
       var width = size;
       var height = size;
-      if (_.random(1, 2) === 1) {
+      if (_oneIn(2)) {
         width += rectangularity;
       } else {
         height += rectangularity;
@@ -310,6 +306,7 @@ const Dungeon = function Dungeon() {
       var room = new Rect(x, y, width, height);
 
       var overlaps = false;
+
       for (var other of _rooms) {
         if (room.intersects(other)) {
           overlaps = true;
@@ -325,7 +322,7 @@ const Dungeon = function Dungeon() {
 
       _startRegion();
 
-      // room Tiles floor
+      // Convert room tiles to floor
       carveArea(x, y, width, height);
     }
   };
@@ -340,8 +337,8 @@ const Dungeon = function Dungeon() {
 
   const _connectRegions = () => {
     let regionConnections = {};
-    tiles.forEach((row, rowIndex) => {
-      row.forEach((tile, tileIndex) => {
+    tiles.forEach(row => {
+      row.forEach(tile => {
         if (tile.type === 'floor') {
           return;
         }
@@ -375,28 +372,19 @@ const Dungeon = function Dungeon() {
         }
       });
     });
-  }
+  };
 
   const _oneIn = (num) => {
     return _.random(1, num) === 1;
   };
 
-  const _addJunction = (pos) => {
-    if (rng.oneIn(4)) {
-      setTile(pos, rng.oneIn(3) ? Tiles.openDoor : Tiles.floor);
-    } else {
-      setTile(pos, Tiles.closedDoor);
-    }
-  }
-
   const _removeDeadEnds = () => {
     var done = false;
 
-    console.log('removing dead ends');
-    while (!done) {
-      done = true;
-      tiles.forEach((row, rowIndex) => {
-        row.forEach((tile, tileIndex) => {
+    const cycle = () => {
+      let done = true;
+      tiles.forEach((row) => {
+        row.forEach((tile) => {
           // If it only has one exit, it's a dead end --> fill it in!
           if (tile.type === 'wall') {
             return;
@@ -407,9 +395,14 @@ const Dungeon = function Dungeon() {
           }
         });
       });
-    }
 
-    console.log('finished removing dead ends');
+      return done;
+    };
+
+    while (!done) {
+      done = true;
+      done = cycle();
+    }
   };
 
   // Gets whether or not an opening can be carved from the given starting
