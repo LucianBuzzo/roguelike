@@ -1,4 +1,36 @@
 var Dungeon = require('./dungeonGenerator.js');
+var U = require('./utils.js');
+
+const intersectRect = function intersectRect(r1, r2) {
+  return !(r2.left > r1.right ||
+           r2.right < r1.left ||
+           r2.top > r1.bottom ||
+           r2.bottom < r1.top);
+};
+
+const intersectIsometric = function(r1, r2) {
+  // Check outer bounding box first
+  if (!intersectRect(r1, r2)) {
+    return false;
+  }
+
+  let conv1 = {
+    top: r1.top - (r1.bottom - r1.top) / 2,
+    left: r1.left,
+    right: r1.right,
+    bottom: r1.bottom + (r1.bottom - r1.top) / 2
+  };
+
+  let conv2 = {
+    top: r2.top - (r2.bottom - r2.top) / 2,
+    left: r2.left,
+    right: r2.right,
+    bottom: r2.bottom + (r2.bottom - r2.top) / 2
+  };
+
+  return intersectRect(conv1, conv2);
+};
+
 
 var Environment = function Environment() {
   this.numTilesX = 51;
@@ -8,10 +40,10 @@ var Environment = function Environment() {
     height: this.numTilesY
   });
 
-  // this.tileWidth = 80;
-  // this.tileHeight = 40;
-  this.tileWidth = 10;
-  this.tileHeight = 5;
+   this.tileWidth = 80;
+   this.tileHeight = 40;
+//   this.tileWidth = 20;
+//   this.tileHeight = 10;
 
   this.debug = global.DEBUG;
   this.x = 0;
@@ -27,11 +59,16 @@ Environment.prototype.setBounds = function setBounds() {
   for (var i = 0; i < this.dungeon.tiles.length; i++) {
     for (var j = 0; j < this.dungeon.tiles.length; j++) {
       if (this.dungeon.tiles[i][j].type === 'wall') {
+        let cartX = i * this.tileWidth / 2;
+        let cartY = j * this.tileHeight;
+        let isoX = cartX - cartY;
+        let isoY = (cartX + cartY) / 2;
+
         this.bounds.push({
-          top: j * this.tileHeight,
-          left: i * this.tileWidth,
-          right: i * this.tileWidth + this.tileWidth,
-          bottom: j * this.tileHeight + this.tileHeight
+          top: isoY,
+          left: isoX,
+          right: isoX + this.tileWidth,
+          bottom: isoY + this.tileHeight
         });
       }
     }
@@ -41,18 +78,25 @@ Environment.prototype.setBounds = function setBounds() {
 Environment.prototype.findStart = function findStart() {
   var startX;
   var startY;
+  var done = false;
   for (var x = 0; x < this.dungeon.tiles.length; x++) {
+    if (done) {
+      break;
+    }
     for (var y = 0; y < this.dungeon.tiles.length; y++) {
       if (this.dungeon.tiles[x][y].type !== 'wall') {
-        startX = x * this.tileWidth;
+        console.log(x, y);
+        // startX = x * this.tileWidth / 2 + this.tileWidth / 2;
+        // startY = y * this.tileHeight + this.tileHeight / 2;
+        startX = x * this.tileWidth / 2;
         startY = y * this.tileHeight;
+        done = true;
+        break;
       }
     }
   }
-  let isoX = startX - startY;
-  let isoY = (startX + startY) / 2;
 
-  return [isoX, isoY];
+  return [startX, startY];
 };
 
 Environment.prototype.update = function update() {
@@ -67,15 +111,6 @@ Environment.prototype.render = function render(ctx, camera) {
   ctx.translate(camera.offsetX, camera.offsetY);
 
   ctx.fillStyle = 'red';
-
-  this.dungeon.rooms.forEach((room) => {
-    ctx.fillRect(
-      room.x * this.tileWidth,
-      room.y * this.tileHeight,
-      room.width * this.tileWidth,
-      room.height * this.tileHeight
-    );
-  });
 
   for (var i = 0; i < this.dungeon.tiles.length; i++) {
     for (var j = 0; j < this.dungeon.tiles.length; j++) {
@@ -92,11 +127,10 @@ Environment.prototype.render = function render(ctx, camera) {
     }
   }
 
-
   if (this.debug) {
     ctx.strokeStyle = 'red';
     this.bounds.forEach((box) => {
-      ctx.strokeRect(box.left, box.top, box.right - box.left, box.bottom - box.top);
+      this.outlineBounds(box.left, box.top, box.right - box.left, box.bottom - box.top, ctx);
     });
   }
 
@@ -118,6 +152,16 @@ Environment.prototype.drawTile = function drawTile(x, y, ctx) {
   ctx.fill();
 };
 
+Environment.prototype.outlineBounds = function outlineBounds(x, y, width, height, ctx) {
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + width / 2, y - height / 2);
+  ctx.lineTo(x + width, y);
+  ctx.lineTo(x + width / 2, y + height / 2);
+  ctx.lineTo(x, y);
+  ctx.stroke();
+};
+
 Environment.prototype.renderForeground = function renderForeground(ctx, camera) {
   ctx.save();
   ctx.translate(camera.offsetX, camera.offsetY);
@@ -125,18 +169,10 @@ Environment.prototype.renderForeground = function renderForeground(ctx, camera) 
   ctx.restore();
 };
 
-const intersectRect = function intersectRect(r1, r2) {
-  return !(r2.left > r1.right ||
-           r2.right < r1.left ||
-           r2.top > r1.bottom ||
-           r2.bottom < r1.top);
-};
-
-
 Environment.prototype.isOutOfBounds = function(boundingBox) {
   let oob = false;
   for (var i = 0; i < this.bounds.length; i++) {
-    if (intersectRect(boundingBox, this.bounds[i])) {
+    if (intersectIsometric(boundingBox, this.bounds[i])) {
       oob = true;
       break;
     }

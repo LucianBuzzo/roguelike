@@ -1,3 +1,5 @@
+var U = require('./utils.js');
+
 const Player = function Player() {
   var playerImageMoving = new Image();
   playerImageMoving.src = './assets/player/player2-spritesheet.png';
@@ -89,12 +91,28 @@ Player.prototype.render = function render(ctx, camera) {
   var dir = this.moving ? this.direction[0] : this.idleDirection;
   ctx.save();
 
+  let [posX, posY] = [this.x, this.y];
+
   ctx.translate(camera.offsetX, camera.offsetY);
 
   if (this.debug) {
     let box = this.getBB();
+    ctx.fillStyle = 'red';
     ctx.strokeStyle = 'red';
-    ctx.strokeRect(box.left, box.top, box.right - box.left, box.bottom - box.top);
+    let boxWidth = box.right - box.left;
+    let boxHeight = box.bottom - box.top;
+    ctx.moveTo(box.left, box.top);
+
+    ctx.lineTo(box.left + boxWidth / 2, box.top - boxHeight / 2);
+
+    ctx.lineTo(box.left + boxWidth, box.top);
+
+    ctx.lineTo(box.left + boxWidth / 2, box.top + boxHeight / 2);
+
+    ctx.lineTo(box.left, box.top);
+
+
+    ctx.stroke();
   }
 
 
@@ -105,8 +123,8 @@ Player.prototype.render = function render(ctx, camera) {
       this.frames[dir][this.frame].y,
       this.width,
       this.height,
-      this.x,
-      this.y,
+      posX,
+      posY,
       this.width,
       this.height
     );
@@ -117,8 +135,8 @@ Player.prototype.render = function render(ctx, camera) {
       this.idleFrames[dir].y,
       this.width,
       this.height,
-      this.x,
-      this.y,
+      posX,
+      posY,
       this.width,
       this.height
     );
@@ -168,11 +186,13 @@ Player.prototype.update = function update(environment) {
 
 // Returns bounding box, this is the players 'footprint';
 Player.prototype.getBB = function getBoundingBox() {
+  let boundY = this.y + 30;
+
   return {
-    top: this.y + this.height - 7,
-    right: this.x + this.width - 6,
-    bottom: this.y + this.height,
-    left: this.x + 6,
+    top: boundY,
+    left: this.x,
+    right: this.x + this.width,
+    bottom: boundY + this.width / 2
   };
 };
 
