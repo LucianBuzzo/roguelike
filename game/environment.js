@@ -104,7 +104,7 @@ Environment.prototype.render = function render(ctx, camera) {
 };
 
 Environment.prototype.drawTile = function drawTile(x, y, ctx) {
-  let cartX = x * this.tileWidth;
+  let cartX = x * this.tileWidth / 2;
   let cartY = y * this.tileHeight;
   let isoX = cartX - cartY;
   let isoY = (cartX + cartY) / 2;
