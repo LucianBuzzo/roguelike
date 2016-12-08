@@ -3,6 +3,7 @@ const U = require('./utils.js');
 const PF = require('pathfinding');
 const turf = require('turf');
 const overlaps = require('turf-overlaps');
+const _ = require('underscore');
 
 const intersectRect = function intersectRect(r1, r2) {
   return !(r2.left > r1.right ||
@@ -12,8 +13,8 @@ const intersectRect = function intersectRect(r1, r2) {
 };
 
 var Environment = function Environment() {
-  this.numTilesX = 51;
-  this.numTilesY = 51;
+  this.numTilesX = 21;
+  this.numTilesY = 21;
   this.dungeon = new Dungeon().generate({
     width: this.numTilesX,
     height: this.numTilesY
@@ -40,6 +41,34 @@ var Environment = function Environment() {
       this.matrix[y].push(this.dungeon.tiles[x][y].type === 'wall' ? 1 : 0);
     }
   }
+
+  console.log(this.matrix[0]);
+
+  let fineMatrix = _.range(1, this.dungeon.tiles[0].length * 5);
+
+  let mat = this.matrix;
+  let yLen = mat.length * 5;
+  let xLen = mat[0].length * 5;
+  let range = _.range(1, this.dungeon.tiles.length * 5);
+  for (y = 0; y < yLen; y += 5) {
+    fineMatrix[y] = range.slice();
+
+    for (x = 0; x < xLen; x += 5) {
+      let bit = this.matrix[y / 5][x / 5];
+      fineMatrix[y][x] = bit;
+      fineMatrix[y][x + 1] = bit;
+      fineMatrix[y][x + 2] = bit;
+      fineMatrix[y][x + 3] = bit;
+      fineMatrix[y][x + 4] = bit;
+    }
+
+    fineMatrix[y + 1] = fineMatrix[y];
+    fineMatrix[y + 2] = fineMatrix[y];
+    fineMatrix[y + 3] = fineMatrix[y];
+    fineMatrix[y + 4] = fineMatrix[y];
+  }
+
+  this.fineMatrix = fineMatrix;
 
   this.pathFinder = new PF.AStarFinder({
     allowDiagonal: true,
@@ -207,6 +236,7 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
   return overlapping;
 };
 
+/*
 Environment.prototype.findPath = function findPath(start, end) {
   let [startX, startY] = start;
   let [cartStartX, cartStartY] = U.iso2Cart(startX, startY);
@@ -228,6 +258,8 @@ Environment.prototype.findPath = function findPath(start, end) {
 
   let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);
 
+  console.log(this.getGridEncompassingPath(path));
+
   // Convert the path back to iso coordinates
   return path.map(coords => {
     let [x, y] = coords;
@@ -238,6 +270,72 @@ Environment.prototype.findPath = function findPath(start, end) {
     let isoY = (cartX + cartY) / 2;
     return [isoX, isoY + this.tileHeight / 2];
   });
+};
+*/
+
+Environment.prototype.findPath = function findPath(start, end) {
+  let [endX, endY] = end;
+  let [cartEndX, cartEndY] = U.iso2Cart(endX, endY);
+
+  let gridEndX = Math.floor(cartEndX / this.tileWidth * 2 * 5);
+  let gridEndY = Math.floor(cartEndY / this.tileHeight * 5);
+console.log(this.fineMatrix[gridEndY][gridEndX] === 1);
+  if (this.fineMatrix[gridEndY][gridEndX] === 1) {
+    return;
+  }
+
+  let [startX, startY] = start;
+  let [cartStartX, cartStartY] = U.iso2Cart(startX, startY);
+
+  let gridStartX = Math.floor(cartStartX / this.tileWidth * 2 * 5);
+  let gridStartY = Math.floor(cartStartY / this.tileHeight * 5);
+
+  console.log('gridAreas');
+  console.log(gridStartX, gridStartY);
+
+  console.log(gridEndX, gridEndY);
+
+  let gridMatrix = new PF.Grid(this.fineMatrix);
+
+  let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);
+
+  path = PF.Util.smoothenPath(gridMatrix, path);
+
+  // Convert the path back to iso coordinates
+  return path.map(coords => {
+    let [x, y] = coords;
+
+    let cartX = x * this.tileWidth / 2 / 5;
+    let cartY = y * this.tileHeight / 5;
+    let isoX = cartX - cartY;
+    let isoY = (cartX + cartY) / 2;
+    return [isoX, isoY + this.tileHeight / 2];
+  });
+};
+
+Environment.prototype.getGridEncompassingPath = function(path) {
+  console.log(path);
+  let xCoords = path.map(c => c[0]);
+  let yCoords = path.map(c => c[1]);
+  let xMax = _.max(xCoords);
+  let xMin = _.min(xCoords);
+  let yMax = _.max(yCoords);
+  let yMin = _.min(yCoords);
+
+  let fineGrid = [];
+
+  for (var y = yMin; y <= yMax; x++) {
+    fineGrid.push(_.range(yMin, yMax));
+    for (var x = xMin; x <= xMax; x++) {
+      fineGrid[y][x] = this.matrix[y][x];
+      fineGrid[y][x] = this.matrix[y][x];
+      fineGrid[y][x] = this.matrix[y][x];
+      fineGrid[y][x] = this.matrix[y][x];
+    }
+  }
+
+  console.log(xMax, yMax);
+  console.log(xMin, yMin);
 };
 
 module.exports = new Environment();

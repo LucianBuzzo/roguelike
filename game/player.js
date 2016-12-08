@@ -160,8 +160,8 @@ Player.prototype.update = function update(environment) {
 
   // Chec to see if we bumped into anything! if we did, reset the position
   if (environment.isOutOfBounds(this.getBB())) {
-    this.x = origX;
-    this.y = origY;
+    // this.x = origX;
+    // this.y = origY;
   }
 };
 
