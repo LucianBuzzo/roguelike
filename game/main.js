@@ -8,14 +8,16 @@ const environment = require('./environment');
 const canvas = document.getElementById('main-canvas');
 const ctx = canvas.getContext('2d');
 
+// The factor by which the canvas size is increased
+const magnification = 2;
 
 ctx.imageSmoothingEnabled = false;
 
 canvas.width = 480;
 canvas.height = 270;
 
-canvas.style.width = '960px';
-canvas.style.height = '540px';
+canvas.style.width = canvas.width * magnification + 'px';
+canvas.style.height = canvas.height * magnification + 'px';
 
 let [startX, startY] = environment.findStart();
 
@@ -82,6 +84,27 @@ document.addEventListener('keyup', function(e) {
   }
 });
 
+document.addEventListener('click', function(e) {
+  // Click coordinates use the actual pixels dranw on the screen, so we need to
+  // scale them down by the amount the canvas is magnified
+
+  // Coordinates are converted into a value relative to the center of the screen
+  // and then added to the player coordinates to get the absolute game map coordinates
+  let clickX = player.x + e.clientX / magnification - canvas.width / 2 + player.width / 2;
+  let clickY = player.y + e.clientY / magnification - canvas.height / 2 + player.height / 2;
+
+  console.log(player.x, player.y);
+  console.log(clickX, clickY);
+
+  let playerBB = player.getBB();
+
+  let path = environment.findPath([playerBB.left, playerBB.top], [clickX, clickY]);
+
+  console.log(path);
+
+  player.setPath(path);
+});
+
 main();
 
 const debugMap = function(dungeon) {
@@ -93,11 +116,11 @@ const debugMap = function(dungeon) {
 
   ctx.imageSmoothingEnabled = false;
 
-  canvas.width = 1200;
-  canvas.height = 900;
+  canvas.width = 110;
+  canvas.height = 110;
 
-  //canvas.style.width = '960px';
-  //canvas.style.height = '540px';
+  // canvas.style.width = '960px';
+  // canvas.style.height = '540px';
 
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);

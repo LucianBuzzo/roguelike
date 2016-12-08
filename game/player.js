@@ -5,6 +5,7 @@ const Player = function Player() {
   var playerImageIdle = new Image();
   playerImageIdle.src = './assets/player/knight-idle.png';
 
+  this.path = [];
   this.debug = global.DEBUG;
   this.loaded = false;
   this.speed = 2;
@@ -59,6 +60,18 @@ Player.prototype.render = function render(ctx, camera) {
 
 
     ctx.stroke();
+
+    if (this.path.length) {
+      let playerBB = this.getBB();
+      let centerX = playerBB.left;
+      let centerY = playerBB.top + (playerBB.bottom - playerBB.top) / 2;
+
+      ctx.moveTo(centerX, centerY);
+      this.path.forEach(([x, y]) => {
+        ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
   }
 
 
@@ -123,6 +136,28 @@ Player.prototype.update = function update(environment) {
     }
   });
 
+  if (this.path.length) {
+    let [waypointX, waypointY] = this.path[0];
+    let playerBB = this.getBB();
+    let centerX = playerBB.left;
+    let centerY = playerBB.top + (playerBB.bottom - playerBB.top) / 2;
+    var run = waypointX - centerX;
+    var rise = waypointY - centerY;
+    var length = Math.sqrt(rise * rise + run * run);
+
+    if (length > speed) {
+      let ratio = speed / length;
+      var unitX = ratio * run;
+      var unitY = ratio * rise;
+
+      this.x += Math.round(unitX);
+      this.y += Math.round(unitY);
+    } else {
+      this.path.splice(0, 1);
+    }
+  }
+
+
   // Chec to see if we bumped into anything! if we did, reset the position
   if (environment.isOutOfBounds(this.getBB())) {
     this.x = origX;
@@ -154,6 +189,10 @@ Player.prototype.addDirection = function addDirection(dir) {
 Player.prototype.removeDirection = function removeDirection(dir) {
   this.direction = this.direction.filter(d => d !== dir);
   this.moving = this.direction.length > 0;
+};
+
+Player.prototype.setPath = function setPath(path) {
+  this.path = path;
 };
 
 module.exports = new Player();

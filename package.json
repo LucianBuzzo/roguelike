@@ -22,6 +22,7 @@
   "dependencies": {
     "electron-json-storage": "^2.1.0",
     "electron-reload": "^1.0.3",
+    "pathfinding": "^0.4.18",
     "remote": "^0.2.6",
     "turf": "^3.0.14",
     "turf-overlaps": "^1.0.3",

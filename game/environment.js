@@ -1,5 +1,6 @@
 const Dungeon = require('./dungeonGenerator.js');
 const U = require('./utils.js');
+const PF = require('pathfinding');
 const turf = require('turf');
 const overlaps = require('turf-overlaps');
 
@@ -29,6 +30,21 @@ var Environment = function Environment() {
   this.bounds = [];
 
   this.setBounds();
+
+  this.matrix = [];
+
+  for (var y = 0; y < this.dungeon.tiles[0].length; y++) {
+    this.matrix.push([]);
+
+    for (var x = 0; x < this.dungeon.tiles.length; x++) {
+      this.matrix[y].push(this.dungeon.tiles[x][y].type === 'wall' ? 1 : 0);
+    }
+  }
+
+  this.pathFinder = new PF.AStarFinder({
+    allowDiagonal: true,
+    dontCrossCorners: true
+  });
 };
 
 Environment.prototype.setBounds = function setBounds() {
@@ -191,5 +207,37 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
   return overlapping;
 };
 
+Environment.prototype.findPath = function findPath(start, end) {
+  let [startX, startY] = start;
+  let [cartStartX, cartStartY] = U.iso2Cart(startX, startY);
+
+  let gridStartX = Math.floor(cartStartX / this.tileWidth * 2);
+  let gridStartY = Math.floor(cartStartY / this.tileHeight);
+
+  console.log(gridStartX, gridStartY);
+
+  let [endX, endY] = end;
+  let [cartEndX, cartEndY] = U.iso2Cart(endX, endY);
+
+  let gridEndX = Math.floor(cartEndX / this.tileWidth * 2);
+  let gridEndY = Math.floor(cartEndY / this.tileHeight);
+
+  console.log(gridEndX, gridEndY);
+
+  let gridMatrix = new PF.Grid(this.matrix);
+
+  let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);
+
+  // Convert the path back to iso coordinates
+  return path.map(coords => {
+    let [x, y] = coords;
+
+    let cartX = x * this.tileWidth / 2;
+    let cartY = y * this.tileHeight;
+    let isoX = cartX - cartY;
+    let isoY = (cartX + cartY) / 2;
+    return [isoX, isoY + this.tileHeight / 2];
+  });
+};
 
 module.exports = new Environment();
