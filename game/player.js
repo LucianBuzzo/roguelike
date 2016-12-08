@@ -1,5 +1,3 @@
-var U = require('./utils.js');
-
 const Player = function Player() {
   var playerImageMoving = new Image();
   playerImageMoving.src = './assets/player/knight-idle.png';
@@ -134,7 +132,7 @@ Player.prototype.update = function update(environment) {
 
 // Returns bounding box, this is the players 'footprint';
 Player.prototype.getBB = function getBoundingBox() {
-  let boundY = this.y + 22;
+  let boundY = this.y + this.height / 2;
   let boundX = this.x + this.width / 2;
 
   return {

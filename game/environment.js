@@ -10,8 +10,6 @@ const intersectRect = function intersectRect(r1, r2) {
            r2.bottom < r1.top);
 };
 
-
-
 var Environment = function Environment() {
   this.numTilesX = 51;
   this.numTilesY = 51;
@@ -180,7 +178,7 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
     [r1.left - r1w / 2, r1.top + r1h / 2],
     [r1.left, r1.top]
   ]]);
-   
+
   var poly2 = turf.polygon([[
     [r2.left, r2.top],
     [r2.left + r2w / 2, r2.top + r2h / 2],
@@ -188,7 +186,7 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
     [r2.left - r2w / 2, r2.top + r2h / 2],
     [r2.left, r2.top]
   ]]);
-   
+
   var overlapping = overlaps(poly1, poly2);
   return overlapping;
 };
