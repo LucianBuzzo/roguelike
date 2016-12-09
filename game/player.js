@@ -32,6 +32,7 @@ const Player = function Player() {
     left: { x: 128, y: 0 },
     right: { x: 192, y: 0 },
   };
+  this.rotation = 0;
 };
 
 Player.prototype.render = function render(ctx, camera) {
@@ -117,10 +118,8 @@ Player.prototype.render = function render(ctx, camera) {
   }
 };
 
-Player.prototype.update = function update(environment) {
+Player.prototype.update = function update() {
   let speed = this.speed;
-  let origY = this.y;
-  let origX = this.x;
   this.direction.forEach(dir => {
     if (dir === 'up') {
       this.y -= speed;
@@ -152,16 +151,21 @@ Player.prototype.update = function update(environment) {
 
       this.x += Math.round(unitX);
       this.y += Math.round(unitY);
+
+      this.rotation = Math.atan2(run, rise) * 180 / Math.PI + 180;
     } else {
       this.path.splice(0, 1);
     }
   }
 
-
-  // Chec to see if we bumped into anything! if we did, reset the position
-  if (environment.isOutOfBounds(this.getBB())) {
-    // this.x = origX;
-    // this.y = origY;
+  if (this.rotation > 315 || this.rotation <= 45) {
+    this.idleDirection = 'up';
+  } else if (this.rotation > 45 && this.rotation <= 135) {
+    this.idleDirection = 'left';
+  } else if (this.rotation > 135 && this.rotation <= 225) {
+    this.idleDirection = 'down';
+  } else {
+    this.idleDirection = 'right';
   }
 };
 
