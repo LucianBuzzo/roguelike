@@ -20,10 +20,8 @@ var Environment = function Environment() {
     height: this.numTilesY
   });
 
-   this.tileWidth = 160;
-   this.tileHeight = 80;
-//   this.tileWidth = 20;
-//   this.tileHeight = 10;
+  this.tileWidth = 160;
+  this.tileHeight = 80;
 
   this.debug = global.DEBUG;
   this.x = 0;
@@ -136,14 +134,11 @@ Environment.prototype.render = function render(ctx, camera) {
   for (var i = 0; i < this.dungeon.tiles.length; i++) {
     for (var j = 0; j < this.dungeon.tiles.length; j++) {
       if (this.dungeon.tiles[i][j].type === 'floor') {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        // ctx.fillRect(i * this.tileWidth, j * this.tileHeight, this.tileWidth, this.tileHeight);
         this.drawTile(i, j, ctx);
 
       }
       if (this.dungeon.tiles[i][j].type === 'door') {
-        ctx.fillStyle = 'yellow';
-        this.drawTile(i, j, ctx);
+        this.drawTile(i, j, ctx, 'yellow');
       }
     }
   }
@@ -158,11 +153,25 @@ Environment.prototype.render = function render(ctx, camera) {
   ctx.restore();
 };
 
-Environment.prototype.drawTile = function drawTile(x, y, ctx) {
+Environment.prototype.drawTile = function drawTile(x, y, ctx, fillStyle = '#888888') {
   let cartX = x * this.tileWidth / 2;
   let cartY = y * this.tileHeight;
   let isoX = cartX - cartY;
   let isoY = (cartX + cartY) / 2;
+
+  ctx.fillStyle = '#555555';
+
+  ctx.beginPath();
+  ctx.moveTo(isoX, isoY);
+  ctx.lineTo(isoX + this.tileWidth / 2, isoY + this.tileHeight / 2);
+  ctx.lineTo(isoX + this.tileWidth / 2, isoY + this.tileHeight / 2 + 20);
+  ctx.lineTo(isoX, isoY + this.tileHeight + 20);
+  ctx.lineTo(isoX - this.tileWidth / 2, isoY + this.tileHeight / 2 + 20);
+  ctx.lineTo(isoX - this.tileWidth / 2, isoY + this.tileHeight / 2);
+  ctx.lineTo(isoX, isoY);
+  ctx.fill();
+
+  ctx.fillStyle = fillStyle;
 
   ctx.beginPath();
   ctx.moveTo(isoX, isoY);
