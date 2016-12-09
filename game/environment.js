@@ -42,8 +42,6 @@ var Environment = function Environment() {
     }
   }
 
-  console.log(this.matrix[0]);
-
   let fineMatrix = _.range(1, this.dungeon.tiles[0].length * 5);
 
   let mat = this.matrix;
@@ -236,52 +234,16 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
   return overlapping;
 };
 
-/*
-Environment.prototype.findPath = function findPath(start, end) {
-  let [startX, startY] = start;
-  let [cartStartX, cartStartY] = U.iso2Cart(startX, startY);
-
-  let gridStartX = Math.floor(cartStartX / this.tileWidth * 2);
-  let gridStartY = Math.floor(cartStartY / this.tileHeight);
-
-  console.log(gridStartX, gridStartY);
-
-  let [endX, endY] = end;
-  let [cartEndX, cartEndY] = U.iso2Cart(endX, endY);
-
-  let gridEndX = Math.floor(cartEndX / this.tileWidth * 2);
-  let gridEndY = Math.floor(cartEndY / this.tileHeight);
-
-  console.log(gridEndX, gridEndY);
-
-  let gridMatrix = new PF.Grid(this.matrix);
-
-  let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);
-
-  console.log(this.getGridEncompassingPath(path));
-
-  // Convert the path back to iso coordinates
-  return path.map(coords => {
-    let [x, y] = coords;
-
-    let cartX = x * this.tileWidth / 2;
-    let cartY = y * this.tileHeight;
-    let isoX = cartX - cartY;
-    let isoY = (cartX + cartY) / 2;
-    return [isoX, isoY + this.tileHeight / 2];
-  });
-};
-*/
-
 Environment.prototype.findPath = function findPath(start, end) {
   let [endX, endY] = end;
   let [cartEndX, cartEndY] = U.iso2Cart(endX, endY);
 
   let gridEndX = Math.floor(cartEndX / this.tileWidth * 2 * 5);
   let gridEndY = Math.floor(cartEndY / this.tileHeight * 5);
-console.log(this.fineMatrix[gridEndY][gridEndX] === 1);
+
+  // If the destination isn't walkable don't go any further.
   if (this.fineMatrix[gridEndY][gridEndX] === 1) {
-    return;
+    return [];
   }
 
   let [startX, startY] = start;
@@ -301,6 +263,10 @@ console.log(this.fineMatrix[gridEndY][gridEndX] === 1);
 
   path = PF.Util.smoothenPath(gridMatrix, path);
 
+  // The first path waypoint can be discarded as it's the players current
+  // location.
+  path.splice(0, 1);
+
   // Convert the path back to iso coordinates
   return path.map(coords => {
     let [x, y] = coords;
@@ -309,33 +275,8 @@ console.log(this.fineMatrix[gridEndY][gridEndX] === 1);
     let cartY = y * this.tileHeight / 5;
     let isoX = cartX - cartY;
     let isoY = (cartX + cartY) / 2;
-    return [isoX, isoY + this.tileHeight / 2];
+    return [isoX, isoY];
   });
-};
-
-Environment.prototype.getGridEncompassingPath = function(path) {
-  console.log(path);
-  let xCoords = path.map(c => c[0]);
-  let yCoords = path.map(c => c[1]);
-  let xMax = _.max(xCoords);
-  let xMin = _.min(xCoords);
-  let yMax = _.max(yCoords);
-  let yMin = _.min(yCoords);
-
-  let fineGrid = [];
-
-  for (var y = yMin; y <= yMax; x++) {
-    fineGrid.push(_.range(yMin, yMax));
-    for (var x = xMin; x <= xMax; x++) {
-      fineGrid[y][x] = this.matrix[y][x];
-      fineGrid[y][x] = this.matrix[y][x];
-      fineGrid[y][x] = this.matrix[y][x];
-      fineGrid[y][x] = this.matrix[y][x];
-    }
-  }
-
-  console.log(xMax, yMax);
-  console.log(xMin, yMin);
 };
 
 module.exports = new Environment();

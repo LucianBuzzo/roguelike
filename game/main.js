@@ -100,9 +100,9 @@ document.addEventListener('click', function(e) {
 
   let path = environment.findPath([playerBB.left, playerBB.top], [clickX, clickY]);
 
-  console.log(path);
-
-  player.setPath(path);
+  if (path.length) {
+    player.setPath(path);
+  }
 });
 
 main();
