@@ -252,11 +252,6 @@ Environment.prototype.findPath = function findPath(start, end) {
   let gridStartX = Math.floor(cartStartX / this.tileWidth * 2 * 5);
   let gridStartY = Math.floor(cartStartY / this.tileHeight * 5);
 
-  console.log('gridAreas');
-  console.log(gridStartX, gridStartY);
-
-  console.log(gridEndX, gridEndY);
-
   let gridMatrix = new PF.Grid(this.fineMatrix);
 
   let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);

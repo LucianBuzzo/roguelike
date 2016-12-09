@@ -1,3 +1,8 @@
+const DIR_UP = 0;
+const DIR_DOWN = 1;
+const DIR_LEFT = 2;
+const DIR_RIGHT = 3;
+
 const Player = function Player() {
   var playerImageMoving = new Image();
   playerImageMoving.src = './assets/player/knight-idle.png';
@@ -17,26 +22,15 @@ const Player = function Player() {
   this.tickCount = 0;
   this.x = 80;
   this.y = 80;
-  this.idleDirection = 'down';
+  this.idleDirection = DIR_DOWN;
   this.direction = [];
   this.moving = false;
-  this.frames = {
-    up: [{ x: 0, y: 0 }],
-    down: [{ x: 64, y: 0 }],
-    left: [{ x: 128, y: 0 }],
-    right: [{ x: 192, y: 0 }],
-  };
-  this.idleFrames = {
-    up: { x: 0, y: 0 },
-    down: { x: 64, y: 0 },
-    left: { x: 128, y: 0 },
-    right: { x: 192, y: 0 },
-  };
+  this.frameSize = 64;
   this.rotation = 0;
 };
 
 Player.prototype.render = function render(ctx, camera) {
-  var dir = this.moving ? this.direction[0] : this.idleDirection;
+  var dir = this.idleDirection;
   ctx.save();
 
   let [posX, posY] = [this.x, this.y];
@@ -75,12 +69,11 @@ Player.prototype.render = function render(ctx, camera) {
     }
   }
 
-
   if (this.moving) {
     ctx.drawImage(
       this.imgMoving,
-      this.frames[dir][this.frame].x,
-      this.frames[dir][this.frame].y,
+      this.frame * this.frameSize,
+      dir * this.frameSize,
       this.width,
       this.height,
       posX,
@@ -91,8 +84,8 @@ Player.prototype.render = function render(ctx, camera) {
   } else {
     ctx.drawImage(
       this.imgIdle,
-      this.idleFrames[dir].x,
-      this.idleFrames[dir].y,
+      this.frame * this.frameSize,
+      dir * this.frameSize,
       this.width,
       this.height,
       posX,
@@ -100,20 +93,20 @@ Player.prototype.render = function render(ctx, camera) {
       this.width,
       this.height
     );
-    ctx.restore();
-    return;
   }
+
   ctx.restore();
 
   this.tickCount++;
 
-  if (this.tickCount < 5) {
+  if (this.tickCount < 10) {
     return;
   }
 
   this.tickCount = 0;
   this.frame++;
-  if (this.frame >= this.frames[dir].length) {
+
+  if (this.frame >= 4) {
     this.frame = 0;
   }
 };
@@ -159,13 +152,13 @@ Player.prototype.update = function update() {
   }
 
   if (this.rotation > 315 || this.rotation <= 45) {
-    this.idleDirection = 'up';
+    this.idleDirection = DIR_UP;
   } else if (this.rotation > 45 && this.rotation <= 135) {
-    this.idleDirection = 'left';
+    this.idleDirection = DIR_LEFT;
   } else if (this.rotation > 135 && this.rotation <= 225) {
-    this.idleDirection = 'down';
+    this.idleDirection = DIR_DOWN;
   } else {
-    this.idleDirection = 'right';
+    this.idleDirection = DIR_RIGHT;
   }
 };
 

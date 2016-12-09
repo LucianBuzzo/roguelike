@@ -93,9 +93,6 @@ document.addEventListener('click', function(e) {
   let clickX = player.x + e.clientX / magnification - canvas.width / 2 + player.width / 2;
   let clickY = player.y + e.clientY / magnification - canvas.height / 2 + player.height / 2;
 
-  console.log(player.x, player.y);
-  console.log(clickX, clickY);
-
   let playerBB = player.getBB();
 
   let path = environment.findPath([playerBB.left, playerBB.top], [clickX, clickY]);
