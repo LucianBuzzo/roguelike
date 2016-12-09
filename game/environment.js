@@ -122,7 +122,7 @@ Environment.prototype.update = function update() {
 };
 
 Environment.prototype.render = function render(ctx, camera) {
-  ctx.fillStyle = 'black';
+  ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
   ctx.save();

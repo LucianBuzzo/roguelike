@@ -164,7 +164,7 @@ Player.prototype.update = function update() {
 
 // Returns bounding box, this is the players 'footprint';
 Player.prototype.getBB = function getBoundingBox() {
-  let boundY = this.y + this.height / 2;
+  let boundY = this.y + this.height / 2 + 4;
   let boundX = this.x + this.width / 2;
 
   return {
