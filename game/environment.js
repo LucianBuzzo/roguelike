@@ -13,8 +13,8 @@ const intersectRect = function intersectRect(r1, r2) {
 };
 
 var Environment = function Environment() {
-  this.numTilesX = 21;
-  this.numTilesY = 21;
+  this.numTilesX = 41;
+  this.numTilesY = 41;
   this.dungeon = new Dungeon().generate({
     width: this.numTilesX,
     height: this.numTilesY

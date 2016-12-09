@@ -1,5 +1,5 @@
 
-global.DEBUG = true;
+global.DEBUG = false;
 
 const player = require('./player');
 const Camera = require('./camera');

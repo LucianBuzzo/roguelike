@@ -237,6 +237,7 @@ const Dungeon = function Dungeon() {
    * @returns {Object} - Tile information for the dungeon
    */
   const generate = (stage) => {
+    let startDate = Date.now();
     if (stage.width % 2 === 0 || stage.height % 2 === 0) {
       throw new Error('The stage must be odd-sized.');
     }
@@ -262,6 +263,10 @@ const Dungeon = function Dungeon() {
     _connectRegions();
 
     _removeDeadEnds();
+
+    let endDate = Date.now();
+
+    console.log('Dungeon generated in ' + (endDate - startDate) + 'ms');
 
     return {
       rooms: _rooms,

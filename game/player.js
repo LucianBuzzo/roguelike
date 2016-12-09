@@ -5,7 +5,7 @@ const DIR_RIGHT = 3;
 
 const Player = function Player() {
   var playerImageMoving = new Image();
-  playerImageMoving.src = './assets/player/knight-idle.png';
+  playerImageMoving.src = './assets/player/knight-walking.png';
 
   var playerImageIdle = new Image();
   playerImageIdle.src = './assets/player/knight-idle.png';
@@ -18,8 +18,10 @@ const Player = function Player() {
   this.imgIdle = playerImageIdle;
   this.width = 64;
   this.height = 64;
-  this.frame = 0;
-  this.tickCount = 0;
+  this.idleFrame = 0;
+  this.walkingFrame = 0;
+  this.idleTickCount = 0;
+  this.walkingTickCount = 0;
   this.x = 80;
   this.y = 80;
   this.idleDirection = DIR_DOWN;
@@ -72,7 +74,7 @@ Player.prototype.render = function render(ctx, camera) {
   if (this.moving) {
     ctx.drawImage(
       this.imgMoving,
-      this.frame * this.frameSize,
+      this.walkingFrame * this.frameSize,
       dir * this.frameSize,
       this.width,
       this.height,
@@ -84,7 +86,7 @@ Player.prototype.render = function render(ctx, camera) {
   } else {
     ctx.drawImage(
       this.imgIdle,
-      this.frame * this.frameSize,
+      this.idleFrame * this.frameSize,
       dir * this.frameSize,
       this.width,
       this.height,
@@ -97,17 +99,26 @@ Player.prototype.render = function render(ctx, camera) {
 
   ctx.restore();
 
-  this.tickCount++;
+  this.idleTickCount++;
 
-  if (this.tickCount < 10) {
-    return;
+  if (this.idleTickCount >= 10) {
+    this.idleTickCount = 0;
+    this.idleFrame++;
+
+    if (this.idleFrame >= 4) {
+      this.idleFrame = 0;
+    }
   }
 
-  this.tickCount = 0;
-  this.frame++;
+  this.walkingTickCount++;
 
-  if (this.frame >= 4) {
-    this.frame = 0;
+  if (this.walkingTickCount >= 6) {
+    this.walkingTickCount = 0;
+    this.walkingFrame++;
+
+    if (this.walkingFrame >= 6) {
+      this.walkingFrame = 0;
+    }
   }
 };
 
@@ -127,6 +138,9 @@ Player.prototype.update = function update() {
       this.x += speed;
     }
   });
+
+  // Character is considered moving as long as there are elements in the path array
+  this.moving = !!this.path.length;
 
   if (this.path.length) {
     let [waypointX, waypointY] = this.path[0];
