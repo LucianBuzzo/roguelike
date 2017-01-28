@@ -34,15 +34,12 @@ BasicGame.Boot.prototype =
     // Add and enable the plug-in.
     game.plugins.add(new Phaser.Plugin.Isometric(game));
 
+    // Start the IsoArcade physics system.
+    game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE);
+
     // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
     // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
     game.iso.anchor.setTo(0.5, 0);
-    // game.iso.anchor.setTo(startX * 38, startY * 38);
-    let [startX, startY] = environment.findStart();
-//    console.log(startX, startY);
-//    let start = new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38);
-//    game.camera.x = start.x;
-//    game.camera.y = start.y;
 
     game.world.setBounds(0, 0, 12000, 12000);
   },
@@ -57,23 +54,22 @@ BasicGame.Boot.prototype =
     // Let's make a load of tiles on a grid.
     this.spawnTiles();
 
+
     // Provide a 3D position for the cursor
     cursorPos = new Phaser.Plugin.Isometric.Point3();
     cursors = game.input.keyboard.createCursorKeys();
 
     // Create another cube as our 'player', and set it up just like the cubes above.
     let [startX, startY] = environment.findStart();
-    console.log(startX, startY);
     projector.project(new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38), startPoint);
-    console.log(startPoint);
-    player = game.add.isoSprite(0, 0, 0, 'cube', 0, isoGroup);
-    console.log(player);
+    // Multiplied by 5 because we use fineMatrix
+    player = game.add.isoSprite(startX * 5 * 38, startY * 5 * 38, 0, 'cube', 0, isoGroup);
+    player.matrixCoordinates = { x: startX * 5, y: startY * 5 };
     player.tint = 0x86bfda;
     player.anchor.set(0.5);
-    // game.physics.isoArcade.enable(player);
-    // Make the camera follow the player.
-    // game.camera.position = startPoint;
-    player.position = startPoint;
+    console.log('PLAYER', player);
+
+    game.physics.isoArcade.enable(player);
     game.camera.follow(player);
   },
   update: function () {
@@ -86,10 +82,17 @@ BasicGame.Boot.prototype =
     isoGroup.forEach(function (tile) {
       var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
       // If it does, do a little animation and tint change.
+      if (inBounds && game.input.activePointer.isDown) {
+        console.log('pointer down');
+        let path = environment.findPath(player.matrixCoordinates, tile.matrixCoordinates);
+        game.physics.isoArcade.moveToXYZ(player, path[0][0] * 38, path[0][1] * 38, 0);
+        console.log(path);
+      }
       if (!tile.selected && inBounds) {
         tile.selected = true;
         tile.tint = 0x86bfda;
         game.add.tween(tile).to({ isoZ: 4 }, 200, Phaser.Easing.Quadratic.InOut, true);
+        console.log(tile.matrixCoordinates);
         // If not, revert back to how it was.
       } else if (tile.selected && !inBounds) {
         tile.selected = false;
@@ -98,17 +101,27 @@ BasicGame.Boot.prototype =
       }
     });
 
+    // Move the player at this speed.
+    var speed = 500;
+
+    /*
     if (cursors.up.isDown) {
-      game.camera.y -= 16;
+      player.body.velocity.y = -speed;
     } else if (cursors.down.isDown) {
-      game.camera.y += 16;
+      player.body.velocity.y = speed;
+    } else {
+      player.body.velocity.y = 0;
     }
 
     if (cursors.left.isDown) {
-      game.camera.x -= 16;
+      player.body.velocity.x = -speed;
     } else if (cursors.right.isDown) {
-      game.camera.x += 16;
+      player.body.velocity.x = speed;
+    } else {
+      player.body.velocity.x = 0;
     }
+    */
+
   },
   render: function () {
     game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
@@ -121,19 +134,19 @@ BasicGame.Boot.prototype =
     var xx;
     var yy;
     environment.fineMatrix.forEach((col, colIndex) => {
-      xx = colIndex * tileWidth;
+      yy = colIndex * tileWidth;
       col.forEach((node, rowIndex) => {
-        if (node === 1) {
+        if (node === 1 && rowIndex !== 0 && colIndex !== 0) {
           return;
         }
-        yy = rowIndex * tileHeight;
+        xx = rowIndex * tileHeight;
         // Create a tile using the new game.add.isoSprite factory method at the specified position.
         // The last parameter is the group you want to add it to (just like game.add.sprite)
         tile = game.add.isoSprite(xx, yy, 0, 'tile', 0, isoGroup);
         tile.anchor.set(0.5, 0);
+        tile.matrixCoordinates = { x: rowIndex, y: colIndex };
       });
     });
-    console.log(tile)
   }
 };
 
@@ -141,131 +154,6 @@ game.state.add('Boot', BasicGame.Boot);
 game.state.start('Boot');
 
 console.log(game);
-
-/*
-var game = new Phaser.Game(800, 400, Phaser.AUTO, 'test', null, true, false);
-
-var BasicGame = function (game) { };
-
-BasicGame.Boot = function (game) { };
-
-var isoGroup, player;
-
-BasicGame.Boot.prototype = {
-    preload: function () {
-        game.load.image('cube', './assets/cube.png');
-
-        game.time.advancedTiming = true;
-
-        // Add and enable the plug-in.
-        game.plugins.add(new Phaser.Plugin.Isometric(game));
-
-        // In order to have the camera move, we need to increase the size of our world bounds.
-        game.world.setBounds(0, 0, 2048, 1024);
-
-        // Start the IsoArcade physics system.
-        game.physics.startSystem(Phaser.Plugin.Isometric.ISOARCADE);
-
-        // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
-        // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
-        // When using camera following, it's best to keep the Y anchor set to 0, which will let the camera
-        // cover the full size of your world bounds.
-        game.iso.anchor.setTo(0.5, 0);
-    },
-    create: function () {
-        // Create a group for our tiles, so we can use Group.sort
-        isoGroup = game.add.group();
-
-        // Set the global gravity for IsoArcade.
-        game.physics.isoArcade.gravity.setTo(0, 0, -500);
-
-        // Let's make a load of cubes on a grid, but do it back-to-front so they get added out of order.
-        var cube;
-        for (var xx = 1024; xx > 0; xx -= 140) {
-            for (var yy = 1024; yy > 0; yy -= 140) {
-                // Create a cube using the new game.add.isoSprite factory method at the specified position.
-                // The last parameter is the group you want to add it to (just like game.add.sprite)
-                cube = game.add.isoSprite(xx, yy, 0, 'cube', 0, isoGroup);
-                cube.anchor.set(0.5);
-
-                // Enable the physics body on this cube.
-                game.physics.isoArcade.enable(cube);
-
-                // Collide with the world bounds so it doesn't go falling forever or fly off the screen!
-                cube.body.collideWorldBounds = true;
-
-                // Add a full bounce on the x and y axes, and a bit on the z axis.
-                cube.body.bounce.set(1, 1, 0.2);
-
-                // Add some X and Y drag to make cubes slow down after being pushed.
-                cube.body.drag.set(100, 100, 0);
-            }
-        }
-
-        // Create another cube as our 'player', and set it up just like the cubes above.
-        player = game.add.isoSprite(128, 128, 0, 'cube', 0, isoGroup);
-        player.tint = 0x86bfda;
-        player.anchor.set(0.5);
-        game.physics.isoArcade.enable(player);
-        player.body.collideWorldBounds = true;
-
-        // Set up our controls.
-        this.cursors = game.input.keyboard.createCursorKeys();
-
-        this.game.input.keyboard.addKeyCapture([
-            Phaser.Keyboard.LEFT,
-            Phaser.Keyboard.RIGHT,
-            Phaser.Keyboard.UP,
-            Phaser.Keyboard.DOWN,
-            Phaser.Keyboard.SPACEBAR
-        ]);
-
-        var space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-
-        space.onDown.add(function () {
-            player.body.velocity.z = 300;
-        }, this);
-
-        // Make the camera follow the player.
-        game.camera.follow(player);
-    },
-    update: function () {
-        // Move the player at this speed.
-        var speed = 100;
-
-        if (this.cursors.up.isDown) {
-            player.body.velocity.y = -speed;
-        }
-        else if (this.cursors.down.isDown) {
-            player.body.velocity.y = speed;
-        }
-        else {
-            player.body.velocity.y = 0;
-        }
-
-        if (this.cursors.left.isDown) {
-            player.body.velocity.x = -speed;
-        }
-        else if (this.cursors.right.isDown) {
-            player.body.velocity.x = speed;
-        }
-        else {
-            player.body.velocity.x = 0;
-        }
-
-        // Our collision and sorting code again.
-        game.physics.isoArcade.collide(isoGroup);
-        game.iso.topologicalSort(isoGroup);
-    },
-    render: function () {
-        game.debug.text("Move with cursors, jump with space!", 2, 36, "#ffffff");
-        game.debug.text(game.time.fps || '--', 2, 14, "#a7aebe");
-    }
-};
-
-game.state.add('Boot', BasicGame.Boot);
-game.state.start('Boot');
-*/
 
 
 /*

@@ -20,8 +20,8 @@ var Environment = function Environment() {
     height: this.numTilesY
   });
 
-  this.tileWidth = 160;
-  this.tileHeight = 80;
+  this.tileWidth = 38;
+  this.tileHeight = 38;
 
   this.debug = global.DEBUG;
   this.x = 0;
@@ -248,26 +248,16 @@ Environment.prototype.intersectIsometric = function(r1, r2) {
 };
 
 Environment.prototype.findPath = function findPath(start, end) {
-  let [endX, endY] = end;
-  let [cartEndX, cartEndY] = U.iso2Cart(endX, endY);
-
-  let gridEndX = Math.floor(cartEndX / this.tileWidth * 2 * 5);
-  let gridEndY = Math.floor(cartEndY / this.tileHeight * 5);
-
+  console.log(start, end);
   // If the destination isn't walkable don't go any further.
-  if (this.fineMatrix[gridEndY][gridEndX] === 1) {
+  if (this.fineMatrix[end.y][end.x] === 1) {
+    console.log('Returning');
     return [];
   }
 
-  let [startX, startY] = start;
-  let [cartStartX, cartStartY] = U.iso2Cart(startX, startY);
-
-  let gridStartX = Math.floor(cartStartX / this.tileWidth * 2 * 5);
-  let gridStartY = Math.floor(cartStartY / this.tileHeight * 5);
-
   let gridMatrix = new PF.Grid(this.fineMatrix);
 
-  let path = this.pathFinder.findPath(gridStartX, gridStartY, gridEndX, gridEndY, gridMatrix);
+  let path = this.pathFinder.findPath(start.x, start.y, end.x, end.y, gridMatrix);
 
   path = PF.Util.smoothenPath(gridMatrix, path);
 
@@ -275,16 +265,7 @@ Environment.prototype.findPath = function findPath(start, end) {
   // location.
   path.splice(0, 1);
 
-  // Convert the path back to iso coordinates
-  return path.map(coords => {
-    let [x, y] = coords;
-
-    let cartX = x * this.tileWidth / 2 / 5;
-    let cartY = y * this.tileHeight / 5;
-    let isoX = cartX - cartY;
-    let isoY = (cartX + cartY) / 2;
-    return [isoX, isoY];
-  });
+  return path;
 };
 
 module.exports = new Environment();
