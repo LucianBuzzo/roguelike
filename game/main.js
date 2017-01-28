@@ -86,7 +86,7 @@ BasicGame.Boot.prototype =
         console.log('pointer down');
         let path = environment.findPath(player.matrixCoordinates, tile.matrixCoordinates);
         game.physics.isoArcade.moveToXYZ(player, path[0][0] * 38, path[0][1] * 38, 0, 500);
-        setTimeout(() => player.velocity.setTo(0, 0), 2000);
+        setTimeout(() => player.body.velocity.setTo(0, 0), 2000);
         console.log(path);
       }
       if (!tile.selected && inBounds) {
