@@ -85,7 +85,8 @@ BasicGame.Boot.prototype =
       if (inBounds && game.input.activePointer.isDown) {
         console.log('pointer down');
         let path = environment.findPath(player.matrixCoordinates, tile.matrixCoordinates);
-        game.physics.isoArcade.moveToXYZ(player, path[0][0] * 38, path[0][1] * 38, 0);
+        game.physics.isoArcade.moveToXYZ(player, path[0][0] * 38, path[0][1] * 38, 0, 500);
+        setTimeout(() => player.velocity.setTo(0, 0), 2000);
         console.log(path);
       }
       if (!tile.selected && inBounds) {
@@ -100,28 +101,6 @@ BasicGame.Boot.prototype =
         game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
       }
     });
-
-    // Move the player at this speed.
-    var speed = 500;
-
-    /*
-    if (cursors.up.isDown) {
-      player.body.velocity.y = -speed;
-    } else if (cursors.down.isDown) {
-      player.body.velocity.y = speed;
-    } else {
-      player.body.velocity.y = 0;
-    }
-
-    if (cursors.left.isDown) {
-      player.body.velocity.x = -speed;
-    } else if (cursors.right.isDown) {
-      player.body.velocity.x = speed;
-    } else {
-      player.body.velocity.x = 0;
-    }
-    */
-
   },
   render: function () {
     game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
