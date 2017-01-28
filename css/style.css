@@ -1,10 +1,9 @@
 html,
 body {
-  background: white;
+  background: #383f58;
 }
 
 canvas {
-  
   display: block;
   image-rendering: pixelated;
 }

@@ -14,9 +14,9 @@ const url = require('url');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-function createWindow () {
+const createWindow = function() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 1024, height: 600});
+  mainWindow = new BrowserWindow({width: 1600, height: 900});
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -25,6 +25,10 @@ function createWindow () {
     slashes: true
   }));
 
+
+  // Open the DevTools.
+  mainWindow.webContents.openDevTools();
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -32,7 +36,7 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-}
+};
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
