@@ -11,83 +11,136 @@ global.Phaser = Phaser;
 // Iso plugin not available on NPM :(
 require('../deps/phaser-plugin-isometric/dist/phaser-plugin-isometric.js');
 
-var game = new Phaser.Game(800, 400, Phaser.AUTO, 'test', null, true, false);
+const environment = require('./environment');
 
-var BasicGame = function (game) { };
+const game = new Phaser.Game(1800, 1800, Phaser.AUTO, 'test', null, true, false);
 
-BasicGame.Boot = function (game) { };
+const BasicGame = function () { };
+BasicGame.Boot = function () { };
 
-var isoGroup, cursorPos, cursor;
+let isoGroup;
+let cursorPos;
+let cursors;
+let player;
 
 BasicGame.Boot.prototype =
 {
-    preload: function () {
-        game.load.image('tile', './assets/tile.png');
+  preload: function () {
+    game.load.image('tile', './assets/tile.png');
+    game.load.image('cube', './assets/cube.png');
 
-        game.time.advancedTiming = true;
+    game.time.advancedTiming = true;
 
-        // Add and enable the plug-in.
-        game.plugins.add(new Phaser.Plugin.Isometric(game));
+    // Add and enable the plug-in.
+    game.plugins.add(new Phaser.Plugin.Isometric(game));
 
-        // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
-        // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
-        game.iso.anchor.setTo(0.5, 0.2);
+    // This is used to set a game canvas-based offset for the 0, 0, 0 isometric coordinate - by default
+    // this point would be at screen coordinates 0, 0 (top left) which is usually undesirable.
+    game.iso.anchor.setTo(0.5, 0);
+    // game.iso.anchor.setTo(startX * 38, startY * 38);
+    let [startX, startY] = environment.findStart();
+//    console.log(startX, startY);
+//    let start = new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38);
+//    game.camera.x = start.x;
+//    game.camera.y = start.y;
 
+    game.world.setBounds(0, 0, 12000, 12000);
+  },
+  create: function () {
+    let projector = new Phaser.Plugin.Isometric.Projector();
+    let startPoint = new Phaser.Point();
+    projector.game = game;
 
-    },
-    create: function () {
+    // Create a group for our tiles.
+    isoGroup = game.add.group();
 
-        // Create a group for our tiles.
-        isoGroup = game.add.group();
+    // Let's make a load of tiles on a grid.
+    this.spawnTiles();
 
-        // Let's make a load of tiles on a grid.
-        this.spawnTiles();
+    // Provide a 3D position for the cursor
+    cursorPos = new Phaser.Plugin.Isometric.Point3();
+    cursors = game.input.keyboard.createCursorKeys();
 
-        // Provide a 3D position for the cursor
-        cursorPos = new Phaser.Plugin.Isometric.Point3();
-    },
-    update: function () {
-        // Update the cursor position.
-        // It's important to understand that screen-to-isometric projection means you have to specify a z position manually, as this cannot be easily
-        // determined from the 2D pointer position without extra trickery. By default, the z position is 0 if not set.
-        game.iso.unproject(game.input.activePointer.position, cursorPos);
+    // Create another cube as our 'player', and set it up just like the cubes above.
+    let [startX, startY] = environment.findStart();
+    console.log(startX, startY);
+    projector.project(new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38), startPoint);
+    console.log(startPoint);
+    player = game.add.isoSprite(0, 0, 0, 'cube', 0, isoGroup);
+    console.log(player);
+    player.tint = 0x86bfda;
+    player.anchor.set(0.5);
+    // game.physics.isoArcade.enable(player);
+    // Make the camera follow the player.
+    // game.camera.position = startPoint;
+    player.position = startPoint;
+    game.camera.follow(player);
+  },
+  update: function () {
+    // Update the cursor position.
+    // It's important to understand that screen-to-isometric projection means you have to specify a z position manually, as this cannot be easily
+    // determined from the 2D pointer position without extra trickery. By default, the z position is 0 if not set.
+    game.iso.unproject(game.input.activePointer.position, cursorPos);
 
-        // Loop through all tiles and test to see if the 3D position from above intersects with the automatically generated IsoSprite tile bounds.
-        isoGroup.forEach(function (tile) {
-            var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
-            // If it does, do a little animation and tint change.
-            if (!tile.selected && inBounds) {
-                tile.selected = true;
-                tile.tint = 0x86bfda;
-                game.add.tween(tile).to({ isoZ: 4 }, 200, Phaser.Easing.Quadratic.InOut, true);
-            }
-            // If not, revert back to how it was.
-            else if (tile.selected && !inBounds) {
-                tile.selected = false;
-                tile.tint = 0xffffff;
-                game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
-            }
-        });
-    },
-    render: function () {
-        game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
-        game.debug.text(game.time.fps || '--', 2, 14, "#a7aebe");
-    },
-    spawnTiles: function () {
-        var tile;
-        for (var xx = 0; xx < 256; xx += 38) {
-            for (var yy = 0; yy < 256; yy += 38) {
-                // Create a tile using the new game.add.isoSprite factory method at the specified position.
-                // The last parameter is the group you want to add it to (just like game.add.sprite)
-                tile = game.add.isoSprite(xx, yy, 0, 'tile', 0, isoGroup);
-                tile.anchor.set(0.5, 0);
-            }
-        }
+    // Loop through all tiles and test to see if the 3D position from above intersects with the automatically generated IsoSprite tile bounds.
+    isoGroup.forEach(function (tile) {
+      var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
+      // If it does, do a little animation and tint change.
+      if (!tile.selected && inBounds) {
+        tile.selected = true;
+        tile.tint = 0x86bfda;
+        game.add.tween(tile).to({ isoZ: 4 }, 200, Phaser.Easing.Quadratic.InOut, true);
+        // If not, revert back to how it was.
+      } else if (tile.selected && !inBounds) {
+        tile.selected = false;
+        tile.tint = 0xffffff;
+        game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
+      }
+    });
+
+    if (cursors.up.isDown) {
+      game.camera.y -= 16;
+    } else if (cursors.down.isDown) {
+      game.camera.y += 16;
     }
+
+    if (cursors.left.isDown) {
+      game.camera.x -= 16;
+    } else if (cursors.right.isDown) {
+      game.camera.x += 16;
+    }
+  },
+  render: function () {
+    game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
+    game.debug.text(game.time.fps || '--', 2, 14, "#a7aebe");
+  },
+  spawnTiles: function () {
+    var tile;
+    var tileWidth = 38;
+    var tileHeight = 38;
+    var xx;
+    var yy;
+    environment.fineMatrix.forEach((col, colIndex) => {
+      xx = colIndex * tileWidth;
+      col.forEach((node, rowIndex) => {
+        if (node === 1) {
+          return;
+        }
+        yy = rowIndex * tileHeight;
+        // Create a tile using the new game.add.isoSprite factory method at the specified position.
+        // The last parameter is the group you want to add it to (just like game.add.sprite)
+        tile = game.add.isoSprite(xx, yy, 0, 'tile', 0, isoGroup);
+        tile.anchor.set(0.5, 0);
+      });
+    });
+    console.log(tile)
+  }
 };
 
 game.state.add('Boot', BasicGame.Boot);
 game.state.start('Boot');
+
+console.log(game);
 
 /*
 var game = new Phaser.Game(800, 400, Phaser.AUTO, 'test', null, true, false);

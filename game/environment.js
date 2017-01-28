@@ -107,15 +107,19 @@ Environment.prototype.findStart = function findStart() {
         console.log(x, y);
         // startX = x * this.tileWidth / 2 + this.tileWidth / 2;
         // startY = y * this.tileHeight + this.tileHeight / 2;
-        startX = x * this.tileWidth / 2;
-        startY = y * this.tileHeight;
+        // startX = x * this.tileWidth / 2;
+        // startY = y * this.tileHeight;
+        startX = x;
+        startY = y;
         done = true;
         break;
       }
     }
   }
 
-  return U.cart2Iso(startX, startY);
+  return [startX, startY];
+
+  // return U.cart2Iso(startX, startY);
 };
 
 Environment.prototype.update = function update() {
