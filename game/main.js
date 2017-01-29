@@ -43,9 +43,9 @@ BasicGame.Boot.prototype =
     game.world.setBounds(0, 0, 12000, 12000);
   },
   create: function () {
-    let projector = new Phaser.Plugin.Isometric.Projector();
+    this.projector = new Phaser.Plugin.Isometric.Projector();
     let startPoint = new Phaser.Point();
-    projector.game = game;
+    this.projector.game = game;
 
     // Create a group for our tiles.
     isoGroup = game.add.group();
@@ -60,10 +60,11 @@ BasicGame.Boot.prototype =
 
     // Create another cube as our 'player', and set it up just like the cubes above.
     let [startX, startY] = environment.findStart();
-    projector.project(new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38), startPoint);
+    this.projector.project(new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38), startPoint);
     // Multiplied by 5 because we use fineMatrix
     player = game.add.isoSprite(startX * 5 * 38, startY * 5 * 38, 0, 'cube', 0, isoGroup);
     player.matrixCoordinates = { x: startX * 5, y: startY * 5 };
+    player.path = [];
     player.tint = 0x86bfda;
     player.anchor.set(0.5);
     console.log('PLAYER', player);
@@ -84,8 +85,7 @@ BasicGame.Boot.prototype =
       if (inBounds && game.input.activePointer.isDown) {
         console.log('pointer down');
         let path = environment.findPath(player.matrixCoordinates, tile.matrixCoordinates);
-        game.physics.isoArcade.moveToXYZ(player, path[0][0] * 38, path[0][1] * 38, 0, 500);
-        setTimeout(() => player.body.velocity.setTo(0, 0), 2000);
+        player.path = path;
         console.log(path);
       }
       if (!tile.selected && inBounds) {
@@ -100,6 +100,25 @@ BasicGame.Boot.prototype =
         game.add.tween(tile).to({ isoZ: 0 }, 200, Phaser.Easing.Quadratic.InOut, true);
       }
     });
+
+    if (player.path.length) {
+      let targetPointIso = new Phaser.Plugin.Isometric.Point3(player.path[0][0] * 38, player.path[0][1] * 38);
+      let targetPoint = new Phaser.Point();
+      this.projector.project(targetPointIso, targetPoint);
+      if (this.pointsInProximity(player.position, targetPoint)) {
+        player.path.shift();
+      }
+      // console.log(pointer)
+      if (!player.path.length) {
+        player.body.velocity.setTo(0, 0);
+      } else {
+        game.physics.isoArcade.moveToXYZ(player, player.path[0][0] * 38, player.path[0][1] * 38, 0, 500);
+      }
+    }
+  },
+  pointsInProximity: function(pointA, pointB) {
+    let distance = Phaser.Point.distance(pointA, pointB);
+    return distance < 5;
   },
   render: function () {
     game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
