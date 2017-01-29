@@ -2,8 +2,8 @@
 global.DEBUG = false;
 
 // Awkward configuration to get Phaser to work in electron
-const PIXI = require('../deps/pixi/pixi.js');
-const p2 = require('p2');
+const PIXI = require('phaser/build/pixi');
+const p2 = require('phaser/build/p2');
 global.PIXI = PIXI;
 global.p2 = p2;
 const Phaser = require('phaser');
