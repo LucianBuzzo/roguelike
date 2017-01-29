@@ -8,8 +8,7 @@ global.PIXI = PIXI;
 global.p2 = p2;
 const Phaser = require('phaser');
 global.Phaser = Phaser;
-// Iso plugin not available on NPM :(
-require('../deps/phaser-plugin-isometric/dist/phaser-plugin-isometric.js');
+require('phaser-plugin-isometric');
 
 const environment = require('./environment');
 

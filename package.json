@@ -28,6 +28,7 @@
     "remote": "^0.2.6",
     "turf": "^3.0.14",
     "turf-overlaps": "^1.0.3",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "phaser-plugin-isometric": "lewster32/phaser-plugin-isometric"
   }
 }
