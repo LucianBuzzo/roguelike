@@ -10,6 +10,8 @@ const Phaser = require('phaser');
 global.Phaser = Phaser;
 require('phaser-plugin-isometric');
 
+const easyStarjs = require('easystarjs');
+
 const environment = require('./environment');
 
 const game = new Phaser.Game(1800, 1800, Phaser.AUTO, 'test', null, true, false);
@@ -19,8 +21,14 @@ BasicGame.Boot = function () { };
 
 let isoGroup;
 let cursorPos;
-let cursors;
 let player;
+
+const EasyStar = new easyStarjs.js();
+EasyStar.setGrid(environment.fineMatrix);
+EasyStar.setAcceptableTiles([0]);
+EasyStar.enableDiagonals();
+EasyStar.enableSync();
+
 
 BasicGame.Boot.prototype =
 {
@@ -56,7 +64,6 @@ BasicGame.Boot.prototype =
 
     // Provide a 3D position for the cursor
     cursorPos = new Phaser.Plugin.Isometric.Point3();
-    cursors = game.input.keyboard.createCursorKeys();
 
     // Create another cube as our 'player', and set it up just like the cubes above.
     let [startX, startY] = environment.findStart();
@@ -83,16 +90,19 @@ BasicGame.Boot.prototype =
       var inBounds = tile.isoBounds.containsXY(cursorPos.x, cursorPos.y);
       // If it does, do a little animation and tint change.
       if (inBounds && game.input.activePointer.isDown) {
-        console.log('pointer down');
-        let path = environment.findPath(player.matrixCoordinates, tile.matrixCoordinates);
-        player.path = path;
-        console.log(path);
+        EasyStar.findPath(
+          player.matrixCoordinates.x, player.matrixCoordinates.y,
+          tile.matrixCoordinates.x, tile.matrixCoordinates.y,
+          function (path) {
+            player.path = path.slice();
+          }
+        );
+        EasyStar.calculate();
       }
       if (!tile.selected && inBounds) {
         tile.selected = true;
         tile.tint = 0x86bfda;
         game.add.tween(tile).to({ isoZ: 4 }, 200, Phaser.Easing.Quadratic.InOut, true);
-        console.log(tile.matrixCoordinates);
         // If not, revert back to how it was.
       } else if (tile.selected && !inBounds) {
         tile.selected = false;
@@ -102,23 +112,24 @@ BasicGame.Boot.prototype =
     });
 
     if (player.path.length) {
-      let targetPointIso = new Phaser.Plugin.Isometric.Point3(player.path[0][0] * 38, player.path[0][1] * 38);
+      let matrixPoint = player.path[0];
+      let targetPointIso = new Phaser.Plugin.Isometric.Point3(matrixPoint.x * 38, matrixPoint.y * 38);
       let targetPoint = new Phaser.Point();
       this.projector.project(targetPointIso, targetPoint);
       if (this.pointsInProximity(player.position, targetPoint)) {
+        player.matrixCoordinates = matrixPoint;
         player.path.shift();
       }
-      // console.log(pointer)
       if (!player.path.length) {
         player.body.velocity.setTo(0, 0);
       } else {
-        game.physics.isoArcade.moveToXYZ(player, player.path[0][0] * 38, player.path[0][1] * 38, 0, 500);
+        game.physics.isoArcade.moveToXYZ(player, player.path[0].x * 38, player.path[0].y * 38, 0, 500);
       }
     }
   },
   pointsInProximity: function(pointA, pointB) {
     let distance = Phaser.Point.distance(pointA, pointB);
-    return distance < 5;
+    return distance < 10;
   },
   render: function () {
     game.debug.text("Move your mouse around!", 2, 36, "#ffffff");
