@@ -29,6 +29,9 @@ EasyStar.setAcceptableTiles([0]);
 EasyStar.enableDiagonals();
 EasyStar.enableSync();
 
+const TW = 38;
+const TH = 38;
+
 
 BasicGame.Boot.prototype =
 {
@@ -67,9 +70,9 @@ BasicGame.Boot.prototype =
 
     // Create another cube as our 'player', and set it up just like the cubes above.
     let [startX, startY] = environment.findStart();
-    this.projector.project(new Phaser.Plugin.Isometric.Point3(startX * 38, startY * 38), startPoint);
+    this.projector.project(new Phaser.Plugin.Isometric.Point3(startX * TW, startY * TH), startPoint);
     // Multiplied by 5 because we use fineMatrix
-    player = game.add.isoSprite(startX * 5 * 38, startY * 5 * 38, 0, 'cube', 0, isoGroup);
+    player = game.add.isoSprite(startX * 5 * TW, startY * 5 * TH, 0, 'cube', 0, isoGroup);
     player.matrixCoordinates = { x: startX * 5, y: startY * 5 };
     player.path = [];
     player.tint = 0x86bfda;
@@ -113,7 +116,7 @@ BasicGame.Boot.prototype =
 
     if (player.path.length) {
       let matrixPoint = player.path[0];
-      let targetPointIso = new Phaser.Plugin.Isometric.Point3(matrixPoint.x * 38, matrixPoint.y * 38);
+      let targetPointIso = new Phaser.Plugin.Isometric.Point3(matrixPoint.x * TW, matrixPoint.y * TH);
       let targetPoint = new Phaser.Point();
       this.projector.project(targetPointIso, targetPoint);
       if (this.pointsInProximity(player.position, targetPoint)) {
@@ -123,7 +126,7 @@ BasicGame.Boot.prototype =
       if (!player.path.length) {
         player.body.velocity.setTo(0, 0);
       } else {
-        game.physics.isoArcade.moveToXYZ(player, player.path[0].x * 38, player.path[0].y * 38, 0, 500);
+        game.physics.isoArcade.moveToXYZ(player, player.path[0].x * TW, player.path[0].y * TH, 0, 500);
       }
     }
   },
@@ -137,17 +140,15 @@ BasicGame.Boot.prototype =
   },
   spawnTiles: function () {
     var tile;
-    var tileWidth = 38;
-    var tileHeight = 38;
     var xx;
     var yy;
     environment.fineMatrix.forEach((col, colIndex) => {
-      yy = colIndex * tileWidth;
+      yy = colIndex * TW;
       col.forEach((node, rowIndex) => {
         if (node === 1 && rowIndex !== 0 && colIndex !== 0) {
           return;
         }
-        xx = rowIndex * tileHeight;
+        xx = rowIndex * TH;
         // Create a tile using the new game.add.isoSprite factory method at the specified position.
         // The last parameter is the group you want to add it to (just like game.add.sprite)
         tile = game.add.isoSprite(xx, yy, 0, 'tile', 0, isoGroup);
