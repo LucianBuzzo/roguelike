@@ -4,7 +4,9 @@
   "description": "A roguelike game",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "repository": "",
   "keywords": [
@@ -22,6 +24,8 @@
   "dependencies": {
     "electron-json-storage": "^2.1.0",
     "electron-reload": "^1.0.3",
-    "remote": "^0.2.6"
-  }
+    "remote": "^0.2.6",
+    "snyk": "^1.192.3"
+  },
+  "snyk": true
 }
