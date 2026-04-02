@@ -6,7 +6,8 @@
   "scripts": {
     "start": "electron .",
     "snyk-protect": "snyk protect",
-    "prepublish": "npm run snyk-protect"
+    "prepublish": "npm run snyk-protect",
+    "check": "node --check main.js && node --check game/main.js && node --check game/player.js && node --check game/camera.js && node --check game/environment.js"
   },
   "repository": "",
   "keywords": [
