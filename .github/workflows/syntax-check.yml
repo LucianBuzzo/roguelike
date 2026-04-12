@@ -1,0 +1,23 @@
+name: Syntax check
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run syntax checks
+        run: npm run check
