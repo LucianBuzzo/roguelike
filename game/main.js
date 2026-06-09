@@ -59,7 +59,10 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
     player.addDirection('right');
   }
-  console.log(e);
+
+  if (global.DEBUG) {
+    console.log(e);
+  }
 });
 
 document.addEventListener('keyup', function(e) {
@@ -75,7 +78,10 @@ document.addEventListener('keyup', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'd') {
     player.removeDirection('right');
   }
-  console.log(e);
+
+  if (global.DEBUG) {
+    console.log(e);
+  }
 });
 
 main();
